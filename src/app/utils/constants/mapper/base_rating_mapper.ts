@@ -1,0 +1,4 @@
+export const BASE_RATING_MAPPER = {
+  STANDARD: 'STD',
+  SUBSTANDARD: 'SUBSTD'
+};

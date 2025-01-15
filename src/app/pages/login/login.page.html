@@ -1,0 +1,79 @@
+<ion-content>
+    <div class="allianz-bg">
+        <ion-grid class="az-login__grid">
+            <ion-row class="az-login__container ion-align-items-center ion-justify-content-center">
+                <ion-col class="az-login__form" size="7">
+                    <div class="ion-text-center">
+                        <img class="az-login__img" src="assets/images/common/allianz-journey.png" alt="logo" />
+                    </div>
+                    <ion-list class="az-login__list">
+                        <ion-row [ngClass]="{'az-login__errorMargin': !errData.userName || usernameIsFocused}">
+                            <ion-col class="ion-text-center">
+                                <ion-row class="az-login__usernameInput ion-align-items-center ion-justify-content-between">
+                                    <ion-icon color="primary" name="person"></ion-icon>
+                                    <ion-input type="email"
+                                        [clearInput]="true"
+                                        placeholder="Username"
+                                        maxlength="100" 
+                                        [(ngModel)]="userName" 
+                                        (ngModelChange)="fieldValidation('userName')"
+                                        (ionBlur)="handleBlur($event, 'userName')" 
+                                        name="userName"
+                                        (ionFocus)="handleFocus($event, 'userName')" 
+                                        id="username">
+                                    </ion-input>
+                                </ion-row>
+                                <span class="az-login__validator-error"
+                                    *ngIf="errData.userName">{{errData.userName}}</span>
+                            </ion-col>
+                        </ion-row>
+                        <ion-row [ngClass]="{'az-login__errorMargin': !errData.password || passwordIsFocused}">
+                            <ion-col class="ion-text-center">
+                                <ion-row class="az-login__customInput ion-align-items-center ion-justify-content-between">
+                                    <ion-icon color="primary" name="key"></ion-icon>
+                                    <ion-input [type]="type" 
+                                        class="az-login__passwordInput" 
+                                        placeholder="Password"
+                                        maxlength="100"
+                                        [clearInput]="true"
+                                        [(ngModel)]="password"
+                                        (ngModelChange)="fieldValidation('password')"
+                                        (ionBlur)="handleBlur($event, 'password')" 
+                                        name="password"
+                                        (ionFocus)="handleFocus($event, 'password')" 
+                                        id="password"
+                                        (keyup.enter)="login()">
+                                    </ion-input>
+                                    <ion-icon [name]="showPassword ? 'eye-outline' : 'eye-off-outline'" (click)="toggleViewPassword()">
+                                    </ion-icon>
+                                </ion-row>
+                                <span class="az-login__validator-error"
+                                    *ngIf="errData.password">{{errData.password}}</span>
+                            </ion-col>
+                        </ion-row>
+                    </ion-list>
+
+                    <ion-row>
+                        <ion-col class="ion-text-center">
+                            <span class="az-login__validator-error" *ngIf="errData.message">{{errData.message}}</span>
+                        </ion-col>
+                    </ion-row>
+
+                    <ion-row>
+                        <ion-col class="ion-text-center">
+                            <ion-button type="submit" 
+                                color="primary" 
+                                expand="block" 
+                                class="ion-text-uppercase"
+                                [disabled]="isFormDisabled || !password" 
+                                (click)="login()" 
+                                shape="round">
+                                LOGIN
+                            </ion-button>
+                        </ion-col>
+                    </ion-row>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+    </div>
+</ion-content>

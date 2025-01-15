@@ -1,0 +1,65 @@
+@font-face {
+    font-family: 'AllianzNeo-Bold';
+    src: url('/assets/fonts/AllianzNeo-Bold.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-BoldItalic';
+    src: url('/assets/fonts/AllianzNeo-BoldItalic.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-Condensed';
+    src: url('/assets/fonts/AllianzNeo-Condensed.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-CondensedBold';
+    src: url('/assets/fonts/AllianzNeo-CondensedBold.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-CondensedLight';
+    src: url('/assets/fonts/AllianzNeo-CondensedLight.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-Italic';
+    src: url('/assets/fonts/AllianzNeo-Italic.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-Light';
+    src: url('/assets/fonts/AllianzNeo-Light.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-LightItalic';
+    src: url('/assets/fonts/AllianzNeo-LightItalic.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-Regular';
+    src: url('/assets/fonts/AllianzNeo-Regular.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-SemiBold';
+    src: url('/assets/fonts/AllianzNeo-SemiBold.otf');
+}
+
+@font-face {
+    font-family: 'AllianzNeo-SemiBoldItalic';
+    src: url('/assets/fonts/AllianzNeo-SemiBoldItalic.otf');
+}
+
+:root {
+    --ion-font-family: 'AllianzNeo-Regular', sans-serif;
+    --ion-font-family-bold: 'AllianzNeo-Bold', sans-serif;
+    --ion-font-family-semibold: 'AllianzNeo-SemiBold', sans-serif;
+    --ion-font-family-light: 'AllianzNeo-Light', sans-serif;
+}
+
+* {
+    font-family: AllianzNeo-Regular !important;
+}

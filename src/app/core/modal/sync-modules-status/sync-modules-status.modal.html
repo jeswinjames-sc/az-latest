@@ -1,0 +1,14 @@
+<ion-content padding> 
+  <app-details class="sticky" *ngIf="selectedApp" [cardInfo]="selectedApp"  [isActionShown]=false></app-details>
+</ion-content>
+
+<ion-footer>
+  <ion-row>
+    <ion-col>
+      <ion-button class="close-btn" expand="block" (click)="closePopup($event)">Cancel</ion-button>
+    </ion-col>
+    <ion-col>
+      <ion-button class="resync-btn" expand="block" (click)="reSync()">Resync </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-footer>

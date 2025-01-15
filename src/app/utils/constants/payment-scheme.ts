@@ -1,0 +1,132 @@
+import { CHANNEL } from "@utils/enums/channel"
+
+export const PAYMENT_SCHEME = {
+    AUTO_DEBIT: 'A',
+    CASH_CHECK: 'R',
+    CREDIT_CARD: 'C',
+    PDC_PAYMENT: 'P',
+    GROUP: 'G',
+    SALARY_DEDUCTION: 'S',
+    FUND_TRANSFER: 'F'
+}
+
+export const PAYMENT_SCHEME_VALUE = {
+    AUTO_DEBIT: 'Auto-Debit',
+    CASH_CHECK: 'Cash/Check',
+    CREDIT_CARD: 'Credit Card',
+    PDC_PAYMENT: 'PDC Payment',
+    GROUP: 'Group',
+    SALARY_DEDUCTION: 'Salary Deduction',
+    FUND_TRANSFER: 'Fund Transfer',
+}
+
+export const AUTO_DEBIT_BANK = {
+    HSBC: {
+        key: 'PNBANK',
+        value: 'PNB'
+    },
+    BDO: {
+        key: 'BDO',
+        value: 'BDO'
+    },
+    PNB: {
+        key: 'PNBANK',
+        value: 'PNB'
+    }
+}
+
+export const DEFAULT_PAYMENT_SCHEME = {
+    [CHANNEL.HSBC]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.FUND_TRANSFER, value: PAYMENT_SCHEME_VALUE.FUND_TRANSFER },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD }
+    ],
+    [CHANNEL.PNB]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CASH_CHECK, value: PAYMENT_SCHEME_VALUE.CASH_CHECK },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD },
+    ],
+    [CHANNEL.AGENCY]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CASH_CHECK, value: PAYMENT_SCHEME_VALUE.CASH_CHECK },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD },
+    ],
+    [CHANNEL.BUSS]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CASH_CHECK, value: PAYMENT_SCHEME_VALUE.CASH_CHECK },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD },
+    ]
+}
+
+export const MONTHLY_PAYMENT_SCHEME = {
+    [CHANNEL.HSBC]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD }
+    ],
+    [CHANNEL.AGENCY]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD }
+    ],
+    [CHANNEL.PNB]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD }
+    ],
+    [CHANNEL.BUSS]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD }
+    ],
+}
+
+export const QUARTERLY_PAYMENT_SCHEME = {
+    [CHANNEL.PNB]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD }
+    ],
+    [CHANNEL.HSBC]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD},
+        { key: PAYMENT_SCHEME.FUND_TRANSFER, value: PAYMENT_SCHEME_VALUE.FUND_TRANSFER },
+    ],
+    [CHANNEL.AGENCY]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD }
+    ],
+    [CHANNEL.BUSS]: [
+        { key: PAYMENT_SCHEME.AUTO_DEBIT, value: PAYMENT_SCHEME_VALUE.AUTO_DEBIT },
+        { key: PAYMENT_SCHEME.CREDIT_CARD, value: PAYMENT_SCHEME_VALUE.CREDIT_CARD }
+    ],
+}
+
+export const SINGLE_PAYMENT_SCHEME = {
+    [CHANNEL.HSBC]: [
+        { key: PAYMENT_SCHEME.FUND_TRANSFER, value: PAYMENT_SCHEME_VALUE.FUND_TRANSFER },
+    ],
+    [CHANNEL.PNB]: [
+        { key: PAYMENT_SCHEME.CASH_CHECK, value: PAYMENT_SCHEME_VALUE.CASH_CHECK },
+    ],
+    [CHANNEL.AGENCY]: [
+        { key: PAYMENT_SCHEME.CASH_CHECK, value: PAYMENT_SCHEME_VALUE.CASH_CHECK },
+    ],
+    [CHANNEL.BUSS]: [
+        { key: PAYMENT_SCHEME.CASH_CHECK, value: PAYMENT_SCHEME_VALUE.CASH_CHECK },
+    ],
+
+}
+
+export const AUTO_DEBIT_BANKS = {
+    [CHANNEL.HSBC]: [
+        { key: AUTO_DEBIT_BANK.BDO.key, value: AUTO_DEBIT_BANK.BDO.value },
+        { key: AUTO_DEBIT_BANK.PNB.key, value: AUTO_DEBIT_BANK.PNB.value },
+    ],
+    [CHANNEL.PNB]: [
+        { key: AUTO_DEBIT_BANK.PNB.key, value: AUTO_DEBIT_BANK.PNB.value },
+    ],
+    [CHANNEL.AGENCY]: [
+        { key: AUTO_DEBIT_BANK.BDO.key, value: AUTO_DEBIT_BANK.BDO.value },
+        { key: AUTO_DEBIT_BANK.PNB.key, value: AUTO_DEBIT_BANK.PNB.value },
+    ],
+    [CHANNEL.BUSS]: [
+        { key: AUTO_DEBIT_BANK.BDO.key, value: AUTO_DEBIT_BANK.BDO.value },
+        { key: AUTO_DEBIT_BANK.PNB.key, value: AUTO_DEBIT_BANK.PNB.value },
+    ]
+}

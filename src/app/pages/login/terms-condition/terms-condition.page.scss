@@ -1,0 +1,37 @@
+.terms-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--ion-color-primary);
+  }
+
+  .terms-content {
+    margin-bottom: 30px;
+    
+    h3 {
+      color: var(--ion-color-dark);
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+  }
+
+  .button-container {
+    ion-button {
+      margin: 10px 0;
+    }
+
+    .decline-button {
+      --background: var(--ion-color-medium);
+    }
+  }
+}

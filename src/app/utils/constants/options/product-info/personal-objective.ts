@@ -1,0 +1,16 @@
+export const PERSONAL_OBJECTIVE = {
+  AZGRW: 'AZpire Growth',
+  AZGRWPA: 'AZpire Growth Pay All Years',
+  AZPK: 'AZpire Peak',
+  AZPKPA: 'AZpire Peak Pay All Years',
+  AZWIZ10: 'AZpire Wiz 10 Pay',
+  AZWIZ5: 'AZpire Wiz 5 Pay',
+  AZWIZPA17: 'AZpire Wiz Pay to Age 17',
+  FLX_IDB: 'Flexibility IDB',
+  FLX_LDB: 'Flexibility LDB',
+  FLXPA_IDB: 'Flexibility Pay All Years IDB',
+  FLXPA_LDB: 'Flexibility Pay All Years LDB',
+  PRO10_IDB: 'Protection 5 Pay IDB',
+  PRO10_LDB: 'Protection 5 Pay LDB',
+  RET10_LDB: 'Retirement 5 Pay LDB',
+}

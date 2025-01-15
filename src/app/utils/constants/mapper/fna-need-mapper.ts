@@ -1,0 +1,9 @@
+export const FNA_NEED_MAPPER = {
+  SAV: 'SAVINGS',
+  PRT: 'PROTECTION',
+  HLTH: 'HEALTH',
+  EDU: 'EDUCATION',
+  RET: 'RETIREMENT',
+  EST: 'ESTATE PLANNING'
+};
+ 

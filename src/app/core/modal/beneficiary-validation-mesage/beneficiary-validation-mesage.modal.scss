@@ -1,0 +1,19 @@
+.beneficiary-modal.close-btn {
+    height: 40px !important;
+    border-radius: 4px;
+    --background: whitesmoke;
+    box-shadow: none !important;
+    color: black;
+}
+
+.beneficiary-modal.close-btn > button { 
+    background-color: whitesmoke;
+}
+
+.proceed-btn{
+    height: 40px !important;
+    border-radius: 4px;
+    background-color: #007ab3;
+    box-shadow: none !important; 
+    color: white;   
+}

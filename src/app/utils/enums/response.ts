@@ -1,0 +1,5 @@
+export enum RESPONSE {
+  SUCCESS = "SUCCESS",
+  ERROR = "ERROR",
+  SI_CREATED = "SI_CREATED"
+}

@@ -1,0 +1,17 @@
+export const SYMPTOMS = [
+    'vommitingOfBlood',
+    'prolongedCough',
+    'enlargedLymphNodes',
+    'persistentNoseBleed',
+    'bloodStool',
+    'faintingSpells',
+    'recurrentSevereHeadaches',
+    'blurringVision',
+    'persistentFever',
+    'persistentFatigue',
+    'unexplainedWeightLossGain',
+    'unusualSkinLesions',
+    'abnormalVaginalDischarge',
+    'persistentDiarrhea',
+    'abdominalPain',
+]

@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Changes has been detected!
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content padding>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-label text-wrap>
+          <p>
+            Occupation/address in both Sales Illustration and Lead is/are not the same.
+          </p>
+          <p>
+            Please read the following before we continue this application:         
+          </p>
+          <ul>
+            <li>Confirm if the client's Occupation/address in sales illustration is updated.</li>
+            <li>If the application is already attach and the occupation/address is not updated, Please consider creating another application with updated one.</li>
+            <li>Ask assistance from your manager</li>
+          </ul>
+        </ion-label>
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-row>
+    <ion-col>
+      <ion-button class="proceedBtn" expand="block" (click)="closePopup($event)">Proceed ( {{this.timer}} )</ion-button>
+    </ion-col>
+  </ion-row>
+</ion-footer>
