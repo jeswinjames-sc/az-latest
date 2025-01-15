@@ -3,7 +3,7 @@ import { DatePipe, Location } from '@angular/common';
 import { SI_KEYS } from '@utils/constants/storage-keys/sales-illustration-keys';
 import { Injectable } from '@angular/core';
 import { LoadingController, AlertController, ToastController, ModalController } from '@ionic/angular';
-import moment from 'moment';
+import * as moment from 'moment';
 import * as _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { Router } from '@angular/router';
