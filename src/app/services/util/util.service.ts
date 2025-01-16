@@ -61,14 +61,18 @@ import { QUEUE_PROCESS, QUEUE_STATUS } from '@utils/enums/queue-data';
 import { Device } from '@capacitor/device';
 import { COUNTRY_LIST_EXT } from '@utils/constants/country-list';
 import { DIVIDEND_OPTION_WS } from '@utils/constants/dividend-option-ws';
+import { unexplainedWeightLossGainColSpecs } from '@utils/constants/form/column-specs/e-application/symptoms-col-specs';
+
+interface LoadingDictionary {
+  [key: string]: HTMLIonLoadingElement;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class UtilService {
-
+  private loading: LoadingDictionary = {};
   public countryList = [];
-  loading = {}; // * Store loaders created from `startLoader` method.
   dbInstance: any = null;
   DB_DATE_FORMAT = 'YYYY-MM-DD';
   DISPLAY_DATE_FORMAT = 'DD-MM-YYYY';
@@ -371,14 +375,13 @@ export class UtilService {
     showInfo?: boolean) {
     const phCode = '63';
     let workCondition;
-    let isNonEarner;
-    let countryCode;
+    let isNonEarner: boolean = false;
+    let countryCode: string | undefined;
 
     if (addressType === ADDRESS_TYPE.HOME || addressType === ADDRESS_TYPE.WORK) {
       countryCode = formGroup.controls[`${addressType}CountryCode`].value;
-      const occupationCode = formGroup.controls.occupationCode.value;
-      const occupationMapper = { ...OCCUPATION_MAPPER };
-      const juvenileOccCode = '215';
+      const occupationCode = formGroup.controls['occupationCode'].value;
+      const occupationMapper = { ...OCCUPATION_MAPPER } as { [key: string]: string | undefined }; const juvenileOccCode = '215';
 
       if (personType === PERSON_TYPE.AO) {
         delete occupationMapper[juvenileOccCode];
@@ -392,7 +395,7 @@ export class UtilService {
       workCondition = phCode !== countryCode;
     }
 
-    const setFieldProperties = (spec, isRequired) => {
+    const setFieldProperties = (spec: any, isRequired: boolean) => {
       const { field } = spec;
       field.isRequired = isRequired;
       field.showInfo = showInfo;
@@ -411,9 +414,9 @@ export class UtilService {
 
     if (showInfo || (workCondition || phCode !== countryCode)) {
       specs.forEach(spec => {
-        spec.field.isRequired = false;
-        spec.field.showInfo = showInfo;
-        spec.field.infoFunction = () => this.presentToastMessage({
+        spec.field!.isRequired = false;
+        spec.field!.showInfo = showInfo;
+        spec.field!.infoFunction = () => this.presentToastMessage({
           message: `For Life Plans, this field is required`,
           color: 'secondary',
           position: 'bottom',
@@ -424,7 +427,7 @@ export class UtilService {
           if (countryCode === '63') {
             setFieldProperties(spec, true);
           } else {
-            if (spec.field.attName !== 'homeZipCode') {
+            if (spec.field!.attName !== 'homeZipCode') {
               setFieldProperties(spec, true);
             }
           }
@@ -437,7 +440,7 @@ export class UtilService {
             if (countryCode === '63') {
               setFieldProperties(spec, true);
             } else {
-              if (spec.field.attName !== 'workZipCode') {
+              if (spec.field!.attName !== 'workZipCode') {
                 setFieldProperties(spec, true);
               }
             }
@@ -448,7 +451,7 @@ export class UtilService {
           if (countryCode === '63') {
             setFieldProperties(spec, true);
           } else {
-            if (spec.field.attName !== 'zipCode') {
+            if (spec.field!.attName !== 'zipCode') {
               setFieldProperties(spec, true);
             } else {
               setFieldProperties(spec, false);
@@ -468,10 +471,10 @@ export class UtilService {
     formGroup: FormGroup,
     specs: ColumnGeneratorSpecs[]) {
     specs.forEach(spec => {
-      spec.field.isRequired = false;
-      spec.field.showInfo = false;
-      formGroup.controls[spec.field.attName].clearValidators();
-      formGroup.controls[spec.field.attName].updateValueAndValidity();
+      spec.field!.isRequired = false;
+      spec.field!.showInfo = false;
+      formGroup.controls[spec.field!.attName].clearValidators();
+      formGroup.controls[spec.field!.attName].updateValueAndValidity();
     });
   }
 
@@ -482,33 +485,35 @@ export class UtilService {
     if (showInfo) {
       specs.forEach(spec => {
         if (spec !== undefined) {
-          spec.field.isRequired = false;
-          spec.field.showInfo = showInfo;
-          spec.field.infoFunction = () => this.presentToastMessage({
+          spec.field!.isRequired = false;
+          spec.field!.showInfo = showInfo;
+          spec.field!.infoFunction = () => this.presentToastMessage({
             message: `For Life Plans, this field is required`,
             color: 'secondary',
             position: 'bottom',
             duration: 3000
           });
-          formGroup.controls[spec.field.attName].clearValidators();
-          formGroup.controls[spec.field.attName].updateValueAndValidity();
+          formGroup.controls[spec.field!.attName].clearValidators();
+          formGroup.controls[spec.field!.attName].updateValueAndValidity();
         }
       });
     } else {
       specs.forEach(spec => {
         if (spec !== undefined) {
-          spec.field.isRequired = true;
-          spec.field.showInfo = showInfo;
-          formGroup.controls[spec.field.attName].setValidators([Validators.required]);
-          formGroup.controls[spec.field.attName].updateValueAndValidity();
+          spec.field!.isRequired = true;
+          spec.field!.showInfo = showInfo;
+          formGroup.controls[spec.field!.attName].setValidators([Validators.required]);
+          formGroup.controls[spec.field!.attName].updateValueAndValidity();
         }
       });
     }
   }
 
   getAddressName(countryCode: string, stateId?: string, cityCode?: string, zipCode?: string) {
-    const { location } = this.settingsService.journeyGlobalData;
+
+    const location = this.settingsService.journeyGlobalData?.location ?? [];
     const country = _.find(location, { countryCode });
+
     if (countryCode && stateId === null && cityCode === null) {
       return null;
     } else if (countryCode && stateId === null) {
@@ -547,7 +552,7 @@ export class UtilService {
   }
 
   getOccupationName(occupationCode: string, occupationGrpCode?: string, vessel?: string) {
-    const occupations = this.settingsService.journeyGlobalData.occupation;
+    const occupations = this.settingsService.journeyGlobalData?.occupation ?? [];
     const occupation = _.find(occupations, { code: occupationCode });
 
     if (vessel && occupationGrpCode && occupationCode) {
@@ -568,7 +573,7 @@ export class UtilService {
       return genderKey;
     } else {
       const type = _.find(GENDER, { key: genderKey });
-      return type.value;
+      return type?.value;
     }
   }
 
@@ -608,33 +613,35 @@ export class UtilService {
     specToClear: ColumnGeneratorSpecs[], code: string, grpCode?: string) {
     if (grpCode && code) {
       if (spec) {
-        if (formGroup.controls.vesselType) {
-          formGroup.controls.vesselType.reset();
+        const vesselControl = formGroup.get('vesselType');
+        if (vesselControl) {
+          vesselControl.reset();
           const vessel = this.settingsService.getOccupationCode(code, grpCode);
-          spec.field.occupationGroup = [];
-          spec.field.vesselType = vessel !== undefined ? vessel : [];
+          spec.field!.occupationGroup = [];
+          spec.field!.vesselType = vessel !== undefined ? vessel : [];
           specToClear.forEach(specs => {
             if (specs) {
-              specs.field.selectedText = '';
+              specs.field!.selectedText = '';
             }
           });
         }
       }
     } else if (code) {
-      formGroup.controls.occupationGrpCode.reset();
+      const occupationGrpControl = formGroup.get('occupationGrpCode');
+      occupationGrpControl!.reset();
       const occupationGroup = this.settingsService.getOccupationCode(code);
       if (spec) {
-        spec.field.vesselType = [];
-        spec.field.occupations = [];
-        spec.field.occupationGroup = occupationGroup;
+        spec.field!.vesselType = [];
+        spec.field!.occupations = [];
+        spec.field!.occupationGroup = occupationGroup;
         specToClear.forEach(specs => {
           if (specs) {
-            specs.field.selectedText = '';
+            specs.field!.selectedText = '';
           }
         });
-        formGroup.controls.occupationGrpCode.enable();
-        spec.field.isDisabled = false;
-        formGroup.controls.occupationGrpCode.markAsTouched();
+        occupationGrpControl!.enable();
+        spec.field!.isDisabled = false;
+        occupationGrpControl!.markAsTouched();
       }
     }
     formGroup.updateValueAndValidity();
@@ -754,7 +761,7 @@ export class UtilService {
     return new Blob(byteArrays, { type: contentType });
   }
 
-  createObjectArrFromDBData(dbData) {
+  createObjectArrFromDBData(dbData: any) {
     const dataArr = [];
     if (dbData.rows && dbData.rows.length > 0) {
       for (let i = 0; i < dbData.rows.length; i++) {
@@ -764,7 +771,7 @@ export class UtilService {
     return dataArr;
   }
 
-  objectArrSpaceCleanUp(object) {
+  objectArrSpaceCleanUp(object: any) {
     if (!object) return;
     Object.keys(object).forEach(key => {
       let val = object[key]
@@ -778,15 +785,15 @@ export class UtilService {
     return object;
   }
 
-  sortDataByDate(data) {
+  CopysortDataByDate(data: any) {
     if (data && data.length > 0) {
-      data = data.sort((eappDateA, eappDateB) => {
-        if (eappDateB.dateCreated) {
+      data = data.sort((eappDateA: any, eappDateB: any) => {
+        if (eappDateB.dateCreated && eappDateA.dateCreated) {
           return eappDateB.dateCreated - eappDateA.dateCreated;
         }
+        return 0;
       });
     }
-
     return data;
   }
 
@@ -831,11 +838,11 @@ export class UtilService {
     };
 
     if (iToast.duration !== -1) {
-      toastProps['duration'] = iToast.duration || 3000 // * set default duration to 3 seconds
+      (toastProps as any)['duration'] = iToast.duration || 3000 // * set default duration to 3 seconds
     }
 
     if (iToast.buttons) {
-      toastProps['buttons'] = iToast.buttons;
+      (toastProps as any)['buttons'] = iToast.buttons;
     }
 
     const toast = await this.toastCtrl.create(toastProps);
@@ -853,7 +860,7 @@ export class UtilService {
     });
 
     // * puts the error on queue, prevents multiple stacking of toasts
-    this.toasts.push(toast);
+    this.toasts.push(toast as Toast);
 
     // * prompts only when there are no toast in queue, hence, just leave it on toasts array and wait for the toast to dismiss
     return this.toasts.length === 1 && await this.showPresentToastMessage();
@@ -861,7 +868,9 @@ export class UtilService {
 
   // * prompts current active toast for presentToastMessage()
   async showPresentToastMessage() {
-    await this.toasts[0].present();
+    if (this.toasts?.[0]?.present) {
+      await this.toasts[0].present();
+    }
   }
 
   async handleJarInvalidResponse(response: any) {
@@ -957,7 +966,7 @@ export class UtilService {
     return moment().add(years, 'years').format();
   }
 
-  getSafe(fn, defaultVal?) {
+  getSafe(fn: any, defaultVal?: any) {
     try {
       return fn();
     } catch (e) {
@@ -971,10 +980,10 @@ export class UtilService {
     const personalObjective = data.personalObjectives === null ? {} : JSON.parse(data.personalObjectives);
     const setSumAssuredKey = data.isTraditional === 0 ? 'basicSumAssured' : 'sumAssured';
     const isAoEqualsToPi = data.isAoEqualsPi === 1 ? 'YES' : 'NO';
-    const funds = [];
-    const riders = [];
-    const topUps = [];
-    const withdrawals = [];
+    const funds: any = [];
+    const riders: any = [];
+    const topUps: any = [];
+    const withdrawals: any = [];
     const policyDate = data.policyDate ? new Date(data.policyDate).toLocaleDateString("en-US") : new Date().toLocaleDateString("en-US");
 
     if (siRiders !== undefined) {
@@ -1029,7 +1038,7 @@ export class UtilService {
         category: data.lifePriorityCategory,
         plan: {
           code: data.planCode,
-          marketingName: PLANS[data.planCode],
+          marketingName: (PLANS as any)[data.planCode],
           version: data.planVersion
         },
         inputOption: data.inputOption,
@@ -1089,7 +1098,7 @@ export class UtilService {
     return jarData;
   }
 
-  async generatePersonObject(personData, isLife?: boolean) {
+  async generatePersonObject(personData: any, isLife?: boolean) {
     const usaCode = '1';
     let homeCountry: string;
     let workCountry: string;
@@ -1122,7 +1131,7 @@ export class UtilService {
     if (personData.homeCountryCode !== usaCode && personData.homeCountryCode == CONSTANTS_STRING.PH_CODE) {
       homeCountry = this.getAddressName(personData.homeCountryCode);
     } else if (personData.homeCountryCode !== usaCode && personData.homeCountryCode !== CONSTANTS_STRING.PH_CODE) {
-      homeCountry = homeCountryname.name;
+      homeCountry = homeCountryname!.name;
     }
 
     if (personData.workCountryCode !== usaCode && personData.workCountryCode == CONSTANTS_STRING.PH_CODE) {
@@ -1166,7 +1175,7 @@ export class UtilService {
     const occupationCode = personData.occupationCode != null && personData.occupationGrpCode == null ? '999' : personData.occupationCode;
     const vessel = personData.occupationCode == null || personData.occupationGrpCode == null ? '999' : 'NA';
     let workTerritory = personData.workZipCode == null || (personData.workCountryCode == '63' && (workProvince == '0' || workCity == '0')) ?
-      { country: 'other', province: 'other', city: 'other' } : { country: workCountry, province: workProvince, city: workCity };
+      { country: 'other', province: 'other', city: 'other' } : { country: workCountry!, province: workProvince, city: workCity };
 
 
     const workCountryname = COUNTRY_LIST_EXT.find((data) => {
@@ -1178,7 +1187,7 @@ export class UtilService {
       if (personData.workCountryCode == usaCode) {
         workTerritory = { country: USA, province: '0', city: '0' };
       } else {
-        workTerritory = { country: workCountryname.name, province: '0', city: '0' };
+        workTerritory = { country: workCountryname!.name, province: '0', city: '0' };
       }
     }
 
@@ -1199,7 +1208,7 @@ export class UtilService {
           vessel: personData.vesselType || vessel
         },
         homeTerritory: {
-          country: homeCountry,
+          country: homeCountry!,
           province: homeProvince,
           city: homeCity
         },
@@ -1219,7 +1228,7 @@ export class UtilService {
           vessel: personData.vesselType || vessel
         },
         homeTerritory: {
-          country: homeCountry,
+          country: homeCountry!,
           province: homeProvince,
           city: homeCity
         },
@@ -1231,7 +1240,7 @@ export class UtilService {
     return personObject;
   }
 
-  async generatePersonObjectHSR(personData, isLife?: boolean) {
+  async generatePersonObjectHSR(personData: any, isLife?: boolean) {
     const usaCode = '1';
     let homeCountry: string;
     let workCountry: string;
@@ -1298,7 +1307,7 @@ export class UtilService {
     const occupationCode = personData.occupationCode != null && personData.occupationGrpCode == null ? '999' : personData.occupationCode;
     const vessel = personData.occupationCode == null || personData.occupationGrpCode == null ? '999' : 'NA';
     const workTerritory = personData.workCountryCode == '63' && (workProvince == '0' || workCity == '0') ?
-      { country: 'PHILIPPINES', province: '', city: '' } : { country: workCountry, province: workProvince, city: workCity };
+      { country: 'PHILIPPINES', province: '', city: '' } : { country: workCountry!, province: workProvince, city: workCity };
 
 
     let personObject = null;
@@ -1318,7 +1327,7 @@ export class UtilService {
           vessel: personData.vesselType || vessel
         },
         homeTerritory: {
-          country: homeCountry,
+          country: homeCountry!,
           province: homeProvince,
           city: homeCity
         },
@@ -1338,7 +1347,7 @@ export class UtilService {
           vessel: personData.vesselType || vessel
         },
         homeTerritory: {
-          country: homeCountry,
+          country: homeCountry!,
           province: homeProvince,
           city: homeCity
         },
@@ -1379,19 +1388,19 @@ export class UtilService {
       }
     } else if (backNav.isPopState) {
       await this.navigateTo({
-        url: backNav.route.url,
-        params: backNav.route.params
+        url: backNav.route!.url,
+        params: backNav.route!.params
       });
     } else if (backNav.isModalDismiss) {
-      const modalOnTop = this.modalCtrl.getTop();
+      const modalOnTop = await this.modalCtrl.getTop();
       if (modalOnTop) {
         await this.modalCtrl.dismiss();
       }
     } else {
       await this.navigateDisplayAlert(
         {
-          url: backNav.route.url,
-          params: backNav.route.params
+          url: backNav.route!.url,
+          params: backNav.route!.params
         },
         {
           message: ACTION_MESSAGE.LEAVE_PAGE,
@@ -1487,19 +1496,19 @@ export class UtilService {
 
   setVessel(formGroup: FormGroup, vesselSpec: ColumnGeneratorSpecs) {
     const seafarerCode = '212';
-    const occupationCode = formGroup.controls.occupationCode.value;
+    const occupationCode = formGroup.controls['occupationCode'].value;
     if (occupationCode === seafarerCode) {
-      vesselSpec.field.isVisible = true;
-      vesselSpec.field.isRequired = true;
-      vesselSpec.field.showInfo = false;
-      vesselSpec.field.infoFunction = undefined;
-      formGroup.controls.vesselType.setValidators([Validators.required]);
-      formGroup.controls.vesselType.markAsTouched();
-      formGroup.controls.vesselType.updateValueAndValidity();
+      vesselSpec.field!.isVisible = true;
+      vesselSpec.field!.isRequired = true;
+      vesselSpec.field!.showInfo = false;
+      vesselSpec.field!.infoFunction = undefined;
+      formGroup.controls['vesselType'].setValidators([Validators.required]);
+      formGroup.controls['vesselType'].markAsTouched();
+      formGroup.controls['vesselType'].updateValueAndValidity();
     } else {
-      vesselSpec.field.isVisible = false;
-      formGroup.controls.vesselType.clearValidators();
-      formGroup.controls.vesselType.updateValueAndValidity();
+      vesselSpec.field!.isVisible = false;
+      formGroup.controls['vesselType'].clearValidators();
+      formGroup.controls['vesselType'].updateValueAndValidity();
     }
   }
 
@@ -1519,18 +1528,18 @@ export class UtilService {
   }
   // BELOW ARE OLD CODES
 
-  isEmpty(value) {
+  isEmpty(value: any) {
     if (value === undefined || value == null || value === '') {
       return true;
     }
     return false;
   }
 
-  getPowerFactor(num, factor) {
+  getPowerFactor(num: number, factor: number) {
     return Math.pow(num, factor);
   }
 
-  differenceBetweenDate(dt1, dt2): number {
+  differenceBetweenDate(dt1: Date, dt2: Date): number {
     return Math.floor((Date.UTC(dt2.getFullYear(), dt2.getMonth(),
       dt2.getDate()) - Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate())) / (1000 * 60 * 60 * 24));
   }
@@ -1548,7 +1557,7 @@ export class UtilService {
   async stopLoader(loader: Loader) {
     if (this.loading[loader.name]) {
       this.loading[loader.name].dismiss();
-      this.loading[loader.name] = null;
+      delete this.loading[loader.name];
     }
   }
 
@@ -1567,7 +1576,7 @@ export class UtilService {
     toast.present();
   }
 
-  async toastMiddleAlert(message: string, duration?) {
+  async toastMiddleAlert(message: string, duration?: number) {
     const toast = await this.toastCtrl.create({
       message,
       duration: duration || 3000,
@@ -1577,7 +1586,7 @@ export class UtilService {
     toast.present();
   }
 
-  async toastBottomAlert(message: string, duration?) {
+  async toastBottomAlert(message: string, duration?: number) {
     const toast = await this.toastCtrl.create({
       message,
       duration: duration || 1500,
@@ -1593,14 +1602,19 @@ export class UtilService {
       message,
       position: 'top',
       duration: 10000,
-      showCloseButton: true,
-      closeButtonText: 'Close',
+      buttons: [{
+        text: 'Close',
+        role: 'cancel'
+      }],
       cssClass: 'sync-toast'
-
     });
+
     const toasts = Array.from(document.querySelectorAll('.sync-toast'));
     toasts.forEach(element => {
-      document.querySelector('.sync-toast').shadowRoot.querySelector('.toast-content').setAttribute('style', 'overflow: hidden');
+      const syncToast = document.querySelector('.sync-toast');
+      const shadowRoot = syncToast?.shadowRoot;
+      const toastContent = shadowRoot?.querySelector('.toast-content');
+      toastContent?.setAttribute('style', 'overflow: hidden');
     });
 
     toast.present();
@@ -1619,7 +1633,7 @@ export class UtilService {
     })
   }
 
-  getValue(sourceData, dataLoc: string) {
+  getValue(sourceData: any, dataLoc: string) {
 
     const location = dataLoc.split('>');
     location.forEach(loc => {
@@ -1627,15 +1641,15 @@ export class UtilService {
     });
     return sourceData;
   }
-  createArray(dataSourceArray: [], arrayDef: [], returnVal) {
+  createArray(dataSourceArray: any[], arrayDef: any[], returnVal: any[]) {
     dataSourceArray.forEach(dataSource => {
-      const tempObj = {};
+      const tempObj: any = {};
       this.transformData(arrayDef, dataSource, tempObj);
       returnVal.push(tempObj);
     });
   }
 
-  transformData(dtDef, sourceData, returnVal = {}) {
+  transformData(dtDef: any[], sourceData: any, returnVal: any = {}) {
     dtDef.forEach(spec => {
       if (spec.childDef !== undefined) {
         returnVal[spec.name] = {};
@@ -1650,7 +1664,7 @@ export class UtilService {
     });
   }
 
-  calculateImageSize(base64String) {
+  calculateImageSize(base64String: string) {
     let padding, inBytes, base64StringLength;
     if (base64String.endsWith('==')) { padding = 2; } else if (base64String.endsWith('=')) { padding = 1; } else { padding = 0; }
 
@@ -1664,7 +1678,7 @@ export class UtilService {
     };
   }
 
-  bytesToSize(bytes) {
+  bytesToSize(bytes: number) {
     const kbytes: number = bytes / 1000;
     const totalSizeMB = Math.round(kbytes / Math.pow(1024, 1));
     return {
@@ -1721,6 +1735,7 @@ export class UtilService {
 
     if (control !== undefined && formGroup !== undefined) {
       formGroup.controls[control].setValue(strTransformed.trim());
+      return strTransformed.trim(); // Add return here
     } else {
       return strTransformed;
     }
@@ -1751,8 +1766,8 @@ export class UtilService {
         `${cardInfo.firstName} ${cardInfo.lastName}`.toLowerCase().replace(/\s+/g, ' ').trim()
           .includes(keyword.toLowerCase().replace(/\s+/g, ' ').trim()) ||                          // search AO using first and last name only
         (String(cardInfo.status).toLowerCase().includes(keyword.toLowerCase()) &&
-          !STATUS.COMPLETED.includes(cardInfo.status) &&                                         // *
-          !STATUS.WAIVED.includes(cardInfo.status)) ||                                           // *
+          !STATUS.COMPLETED.includes(cardInfo.status!) &&                                         // *
+          !STATUS.WAIVED.includes(cardInfo.status!)) ||                                           // *
         String(cardInfo.product).toLowerCase().includes(keyword.toLowerCase()) ||
         String(cardInfo.applicationNumber).includes(keyword) ||
         String((cardInfo.insuredName || '').replace(',', ' ')).replace(/\s+/g, ' ').trim().toLowerCase().includes(keyword.toLowerCase().replace(/\s+/g, ' ').trim()) ||
@@ -1797,7 +1812,7 @@ export class UtilService {
     return value ? `${parseInt(`${value.replace(REGEXP.ALL_SPECIAL_CHAR, "")}`)}` : null;
   }
 
-  findQuestionValue(questionCode, listOfQuestions) {
+  findQuestionValue(questionCode: any, listOfQuestions: any) {
     let answer: any;
     const question: any = _.find(listOfQuestions, { questionId: questionCode });
 
@@ -1808,9 +1823,9 @@ export class UtilService {
     return answer;
   }
 
-  async mapQuestionObject(question, isMapped: boolean) {
+  async mapQuestionObject(question: any, isMapped: boolean) {
     // const eappWSReq = this.eappResponse.contractApplications[0].data.contractHolder.questions;
-    const insertQuestionsFieldDefs = [];
+    const insertQuestionsFieldDefs: any = [];
     const questionObject = question;
     const questionKeys = Object.keys(questionObject);
 
@@ -1821,16 +1836,20 @@ export class UtilService {
       questionSubCategoryKeys.forEach(questionSubCategoryKey => {
         const answerObject = questionSubCategory[questionSubCategoryKey];
         const questionCodes = Object.keys(answerObject);
-
         questionCodes.forEach(questionCode => {
           if (isMapped) {
-            if (WS_QUESTION_CODE_MAPPER[questionCode]) {
-              insertQuestionsFieldDefs.push({ questionId: WS_QUESTION_CODE_MAPPER[questionCode], answerValue: this.setAnswerValue(answerObject[questionCode]) });
+            if (questionCode in WS_QUESTION_CODE_MAPPER) {  // Type-safe check
+              insertQuestionsFieldDefs.push({
+                questionId: WS_QUESTION_CODE_MAPPER[questionCode as keyof typeof WS_QUESTION_CODE_MAPPER],
+                answerValue: this.setAnswerValue(answerObject[questionCode])
+              });
             }
           } else {
-            insertQuestionsFieldDefs.push({ questionId: questionCode, answerValue: answerObject[questionCode] });
+            insertQuestionsFieldDefs.push({
+              questionId: questionCode,
+              answerValue: answerObject[questionCode]
+            });
           }
-
         });
       });
     });
@@ -1839,7 +1858,7 @@ export class UtilService {
   }
 
 
-  async buildQuestion(question, listOfQuestions, isReplacementNotif: boolean) {
+  async buildQuestion(question: any, listOfQuestions: any, isReplacementNotif: boolean) {
     let buildObj: any;
     if (isReplacementNotif) {
       const company = this.findQuestionValue(question.basicLife, listOfQuestions);
@@ -1871,7 +1890,7 @@ export class UtilService {
     return questionId.split('_')[0];
   }
 
-  getKeyByValue(value) {
+  getKeyByValue(value: any) {
     return Object.keys(WS_QUESTION_CODE_MAPPER).find(key =>
       key === value);
   }
@@ -1890,13 +1909,13 @@ export class UtilService {
     activeField.conditionalFunction();
   }
 
-  async disableEnableField(fieldDisablingParams) {
+  async disableEnableField(fieldDisablingParams: any) {
     let isEnabled: boolean;
 
     if (fieldDisablingParams.conditionalOperator === 'or') {
       isEnabled = false;
 
-      fieldDisablingParams.fieldDependency.conditions.forEach(condition => {
+      fieldDisablingParams.fieldDependency.conditions.forEach((condition: any) => {
         const fgCtrlName = condition.formCtrl ? condition.formCtrl : fieldDisablingParams.fieldDependency.field.attName;
         const fieldValue = this.valueParser(fieldDisablingParams.formGroup.get(fgCtrlName).value);
 
@@ -1918,7 +1937,7 @@ export class UtilService {
     } else {
       isEnabled = true;
 
-      fieldDisablingParams.fieldDependency.conditions.forEach(condition => {
+      fieldDisablingParams.fieldDependency.conditions.forEach((condition: any) => {
         const fgCtrlName = condition.formCtrl ? condition.formCtrl : fieldDisablingParams.fieldDependency.field.attName;
         const fieldValue = this.valueParser(fieldDisablingParams.formGroup.get(fgCtrlName).value);
 
@@ -1938,8 +1957,8 @@ export class UtilService {
       });
     }
 
-    fieldDisablingParams.affectedComponents.forEach(component => {
-      let ctrlName: string | string[];
+    fieldDisablingParams.affectedComponents.forEach((component: any) => {
+      let ctrlName: string | string[] = '';
 
       if (typeof component === 'string') {
         ctrlName = component;
@@ -1956,7 +1975,7 @@ export class UtilService {
       }
 
       if (isFieldColumnGeneratorSpecs(component)) {
-        ctrlName = (component as ColumnGeneratorSpecs).field.attName;
+        ctrlName = (component as ColumnGeneratorSpecs).field!.attName;
       }
 
       if (isDynamicTableSpecs(component)) {
@@ -1967,7 +1986,7 @@ export class UtilService {
         const ctrlNameList: string[] = [];
         (component as RowGeneratorSpecs).columns.forEach((colSpecs, index) => {
           if ((colSpecs as ColumnGeneratorSpecs).field) {
-            ctrlNameList.push((colSpecs as ColumnGeneratorSpecs).field.attName);
+            ctrlNameList.push((colSpecs as ColumnGeneratorSpecs).field!.attName);
           }
         });
         ctrlName = ctrlNameList;
@@ -2004,7 +2023,7 @@ export class UtilService {
     if (fieldDisablingParams.customCondition) { fieldDisablingParams.customCondition(); }
   }
 
-  valueParser(value) {
+  valueParser(value: any) {
     try {
       return JSON.parse(value);
     } catch {
@@ -2013,7 +2032,7 @@ export class UtilService {
   }
 
   tablerMapperGenerator(optionArray: { key: any, value: any }[]): {} {
-    const mapper = {};
+    const mapper: any = {};
     optionArray.forEach(option => {
       mapper[option.key] = option.value;
     });
@@ -2022,10 +2041,10 @@ export class UtilService {
 
   changeTableToReadOnly(tableGeneratorSpecsList: Array<DynamicTableSpecs>) {
     for (const tableGeneratorSpecs of tableGeneratorSpecsList) {
-      tableGeneratorSpecs.availableActions.add = false;
-      tableGeneratorSpecs.availableActions.edit = false;
-      tableGeneratorSpecs.availableActions.delete = false;
-      tableGeneratorSpecs.availableActions.save = false;
+      tableGeneratorSpecs.availableActions!.add = false;
+      tableGeneratorSpecs.availableActions!.edit = false;
+      tableGeneratorSpecs.availableActions!.delete = false;
+      tableGeneratorSpecs.availableActions!.save = false;
       tableGeneratorSpecs.readOnly = true;
       tableGeneratorSpecs.hasShowMore = false;
     }
@@ -2033,16 +2052,16 @@ export class UtilService {
 
   changeTableToEditable(tableGeneratorSpecsList: Array<DynamicTableSpecs>) {
     for (const tableGeneratorSpecs of tableGeneratorSpecsList) {
-      tableGeneratorSpecs.availableActions.add = true;
-      tableGeneratorSpecs.availableActions.edit = true;
-      tableGeneratorSpecs.availableActions.delete = true;
-      tableGeneratorSpecs.availableActions.save = true;
+      tableGeneratorSpecs.availableActions!.add = true;
+      tableGeneratorSpecs.availableActions!.edit = true;
+      tableGeneratorSpecs.availableActions!.delete = true;
+      tableGeneratorSpecs.availableActions!.save = true;
       tableGeneratorSpecs.readOnly = false;
       tableGeneratorSpecs.hasShowMore = true;
     }
   }
 
-  async sortByIsDeleted(listOfRequest) {
+  async sortByIsDeleted(listOfRequest: any) {
     let requests: any;
     if (Array.isArray(listOfRequest) && listOfRequest.length > 0) {
       requests = listOfRequest.sort((x, y) => +x.isDeleted - +y.isDeleted).reverse();
@@ -2050,7 +2069,7 @@ export class UtilService {
     return requests;
   }
 
-  setAnswerValue(answerValue) {
+  setAnswerValue(answerValue: any) {
     let answer;
 
     if (answerValue == 'true') {
@@ -2089,7 +2108,7 @@ export class UtilService {
     return moment(`${split[0]}/01/${split[1]}`).isValid();
   }
 
-  setYesNoValue(answerValue) {
+  setYesNoValue(answerValue: any) {
     let answer;
     if (answerValue == true || answerValue == 'true') {
       answer = 'Y'
@@ -2101,7 +2120,7 @@ export class UtilService {
     return answer;
   }
 
-  convertDate(currentDate) {
+  convertDate(currentDate: string) {
     let date;
     if (currentDate != null && currentDate != CONSTANTS_STRING.EMPTY_STRING &&
       currentDate.toLowerCase() != CONSTANTS_STRING.INVALID.toLowerCase()) {
@@ -2111,280 +2130,382 @@ export class UtilService {
     return date
   }
 
-  async getVersionNumber() {
-    let versionNumber: string;
-    await this.appVersion.getVersionNumber().then(version => {
-      versionNumber = version;
-    });
-    return versionNumber;
+  async getVersionNumber(): Promise<string> {
+    const info = await App.getInfo();
+    return info.version;
   }
 
-  async getVersionCode() {
-    let versionCode: string | number;
-    await this.appVersion.getVersionCode().then(version => {
-      versionCode = version;
-    });
-    return versionCode;
+  async getVersionCode(): Promise<string | number> {
+    const info = await App.getInfo();
+    return info.build;
   }
 
-  async setLocation(countryColSpecs: ColumnGeneratorSpecs, provinceColSpecs: ColumnGeneratorSpecs,
-    cityColSpecs?: ColumnGeneratorSpecs, zipCodeColSpecs?: ColumnGeneratorSpecs) {
-
-    const formGroup = countryColSpecs.field.formGroup
-    const location = await this.storage.get(KEYS.LOCATION)
-    const selectedCountry = _.find(location, _.matchesProperty('countryCode', formGroup.get(countryColSpecs.field.attName).value))
-
-    const PHUSCodes = [CONSTANTS_STRING.PH_CODE, CONSTANTS_STRING.US_CODE];
-    if (selectedCountry && !PHUSCodes.includes(selectedCountry.countryCode)) {
-      let provinceControl, cityControl, zipControl;
-      if (provinceColSpecs) provinceControl = formGroup.get(provinceColSpecs.field.attName);
-      if (cityColSpecs) cityControl = formGroup.get(cityColSpecs.field.attName);
-      if (zipCodeColSpecs) zipControl = formGroup.get(zipCodeColSpecs.field.attName);
-
-      if (provinceControl) provinceControl.enable();
-      if (cityControl) cityControl.enable();
-      if (zipControl) zipControl.enable();
-
+  async setLocation(
+    countryColSpecs: ColumnGeneratorSpecs,
+    provinceColSpecs: ColumnGeneratorSpecs,
+    cityColSpecs?: ColumnGeneratorSpecs,
+    zipCodeColSpecs?: ColumnGeneratorSpecs
+  ) {
+    // Validate required fields
+    if (!countryColSpecs?.field?.formGroup || !countryColSpecs.field?.attName) {
       return;
     }
 
-    if (selectedCountry) {
-      const provincesOption = this.createOptionsFrObjArr(selectedCountry.states, 'stateId', 'name')
+    const formGroup = countryColSpecs.field.formGroup;
+    const location = await this.storage.get(KEYS.LOCATION);
+    const countryValue = formGroup.get(countryColSpecs.field.attName)?.value;
+    const selectedCountry = countryValue ? _.find(location, _.matchesProperty('countryCode', countryValue)) : null;
 
-      let selectedProvince, selectedCity
-      provinceColSpecs.field.options = this.sortAddressByName('state', provincesOption, true)
+    const PHUSCodes = [CONSTANTS_STRING.PH_CODE, CONSTANTS_STRING.US_CODE];
 
-      selectedProvince = _.find(selectedCountry.states, _.matchesProperty('stateId', formGroup.get(provinceColSpecs.field.attName).value))
-      if (selectedProvince) {
-        const cityOption = this.createOptionsFrObjArr(selectedProvince.cities, 'cityCode', 'name')
-        selectedCity = _.find(selectedProvince.cities, _.matchesProperty('cityCode', formGroup.get(cityColSpecs.field.attName).value))
+    // Handle non-PH/US countries
+    if (selectedCountry && !PHUSCodes.includes(selectedCountry.countryCode)) {
+      const provinceControl = provinceColSpecs?.field?.attName ?
+        formGroup.get(provinceColSpecs.field.attName) : null;
+      const cityControl = cityColSpecs?.field?.attName ?
+        formGroup.get(cityColSpecs.field.attName) : null;
+      const zipControl = zipCodeColSpecs?.field?.attName ?
+        formGroup.get(zipCodeColSpecs.field.attName) : null;
+
+      provinceControl?.enable();
+      cityControl?.enable();
+      zipControl?.enable();
+      return;
+    }
+
+    if (selectedCountry && provinceColSpecs?.field) {
+      const provincesOption = this.createOptionsFrObjArr(selectedCountry.states, 'stateId', 'name');
+      provinceColSpecs.field.options = this.sortAddressByName('state', provincesOption, true);
+
+      const provinceValue = formGroup.get(provinceColSpecs.field.attName)?.value;
+      const selectedProvince = provinceValue ?
+        _.find(selectedCountry.states, _.matchesProperty('stateId', provinceValue)) : null;
+
+      if (selectedProvince && cityColSpecs?.field?.attName) {
+        const cityOption = this.createOptionsFrObjArr(selectedProvince.cities, 'cityCode', 'name');
+        const cityControl = formGroup.get(cityColSpecs.field.attName);
+        const cityValue = cityControl?.value;
+        const selectedCity = cityValue ?
+          _.find(selectedProvince.cities, _.matchesProperty('cityCode', cityValue)) : null;
 
         if (cityOption.length !== 0) {
-          formGroup.get(cityColSpecs.field.attName).enable();
-          cityColSpecs.field.options = this.sortAddressByName('city', cityOption, true);
+          cityControl?.enable();
+          if (cityColSpecs.field) {
+            cityColSpecs.field.options = this.sortAddressByName('city', cityOption, true);
+          }
         } else {
-          formGroup.get(cityColSpecs.field.attName).reset();
-          formGroup.get(cityColSpecs.field.attName).disable();
-          cityColSpecs.field.options = [];
+          cityControl?.reset();
+          cityControl?.disable();
+          if (cityColSpecs.field) {
+            cityColSpecs.field.options = [];
+          }
         }
 
-        if (zipCodeColSpecs) {
+        // Handle zip code
+        if (zipCodeColSpecs?.field?.attName) {
+          const zipControl = formGroup.get(zipCodeColSpecs.field.attName);
           if (selectedCity && selectedCity.zipCodes.length > 0) {
             if (selectedCity.zipCodes.length === 1) {
-              zipCodeColSpecs.field.type = 'readOnly'
-              formGroup.get(zipCodeColSpecs.field.attName).setValue(selectedCity.zipCodes[0].zipCode)
-            }
-            else {
-              const zipCodeOption = this.createOptionsFrObjArr(selectedCity.zipCodes, 'zipCode', 'zipCode')
-              zipCodeColSpecs.field.type = 'selectize'
-              zipCodeColSpecs.field.interface = 'popover'
+              zipCodeColSpecs.field.type = 'readOnly';
+              zipControl?.setValue(selectedCity.zipCodes[0].zipCode);
+            } else {
+              const zipCodeOption = this.createOptionsFrObjArr(selectedCity.zipCodes, 'zipCode', 'zipCode');
+              zipCodeColSpecs.field.type = 'selectize';
+              zipCodeColSpecs.field.interface = 'popover';
               zipCodeColSpecs.field.options = this.sortAddressByName('zipcode', zipCodeOption, true);
-              formGroup.get(zipCodeColSpecs.field.attName).setValidators([Validators.required])
-              formGroup.get(zipCodeColSpecs.field.attName).updateValueAndValidity();
+              zipControl?.setValidators([Validators.required]);
+              zipControl?.updateValueAndValidity();
             }
           } else {
-            zipCodeColSpecs.field.type = 'readOnly'
-            formGroup.get(zipCodeColSpecs.field.attName).reset();
+            zipCodeColSpecs.field.type = 'readOnly';
+            zipControl?.reset();
           }
         }
       } else {
-        if (zipCodeColSpecs) formGroup.get(zipCodeColSpecs.field.attName).reset()
-
-        formGroup.get(cityColSpecs.field.attName).reset()
-        formGroup.get(cityColSpecs.field.attName).disable()
-        cityColSpecs.field.options = []
+        // Reset zip and city when no province selected
+        if (zipCodeColSpecs?.field?.attName) {
+          formGroup.get(zipCodeColSpecs.field.attName)?.reset();
+        }
+        if (cityColSpecs?.field?.attName) {
+          const cityControl = formGroup.get(cityColSpecs.field.attName);
+          cityControl?.reset();
+          cityControl?.disable();
+          if (cityColSpecs.field) {
+            cityColSpecs.field.options = [];
+          }
+        }
       }
     } else {
-      formGroup.get(provinceColSpecs.field.attName).reset()
-      provinceColSpecs.field.options = []
-    }
-
-  }
-
-  setOccupation(natureOfBusinessDropdown: ColumnGeneratorSpecs, occDropdown: ColumnGeneratorSpecs, rawOccupation) {
-    const formGroup = natureOfBusinessDropdown.field.formGroup
-    const selectedCountry = _.find(rawOccupation, _.matchesProperty('code', formGroup.get(natureOfBusinessDropdown.field.attName).value))
-    if (selectedCountry) {
-      const occupations = selectedCountry.occupations
-      const options = this.createOptionsFrObjArr(occupations, 'code', 'name')
-      occDropdown.field.options = options
-      occDropdown.field.isDisabled = false
-      if (options.length == 1) {
-        occDropdown.field.isDisabled = true
-        formGroup.get(occDropdown.field.attName).setValue(options[0].key)
+      // Reset province when no country selected
+      if (provinceColSpecs?.field?.attName) {
+        formGroup.get(provinceColSpecs.field.attName)?.reset();
+        provinceColSpecs.field.options = [];
       }
     }
   }
 
-  createOptionsFrObjArr(optionArray, keyCode: string, valueCode: string) {
-    let arrayHolder = []
+  setOccupation(
+    natureOfBusinessDropdown: ColumnGeneratorSpecs,
+    occDropdown: ColumnGeneratorSpecs,
+    rawOccupation: any
+  ) {
+    // Check if required fields exist
+    if (!natureOfBusinessDropdown?.field?.formGroup || !natureOfBusinessDropdown.field?.attName) {
+      return;
+    }
 
-    if (optionArray) optionArray.forEach(optionObject => arrayHolder.push({ key: optionObject[keyCode], value: optionObject[valueCode] }))
+    const formGroup = natureOfBusinessDropdown.field.formGroup;
+    const natureValue = formGroup.get(natureOfBusinessDropdown.field.attName)?.value;
+    const selectedCountry = natureValue ?
+      _.find(rawOccupation, _.matchesProperty('code', natureValue)) : null;
 
-    return arrayHolder
+    if (selectedCountry && occDropdown?.field) {
+      const occupations = selectedCountry.occupations;
+      const options = this.createOptionsFrObjArr(occupations, 'code', 'name');
+
+      occDropdown.field.options = options;
+      occDropdown.field.isDisabled = false;
+
+      if (options.length === 1 && occDropdown.field.attName) {
+        occDropdown.field.isDisabled = true;
+        formGroup.get(occDropdown.field.attName)?.setValue(options[0].key);
+      }
+    }
+  }
+
+  createOptionsFrObjArr(
+    optionArray: any[],
+    keyCode: string,
+    valueCode: string
+  ): { key: any, value: any }[] {
+    const arrayHolder: { key: any, value: any }[] = [];
+
+    if (optionArray?.length) {
+      optionArray.forEach(optionObject => {
+        arrayHolder.push({
+          key: optionObject[keyCode],
+          value: optionObject[valueCode]
+        });
+      });
+    }
+
+    return arrayHolder;
   }
 
   async logger(logType: string, log: string) {
     return;
-    const logDateFormat = moment().format('HH:mm:ss:sss')
-    const LOG_FILENAME = `${moment().format('YYYYMMDD')}_${logDateFormat.replace(/[^0-9]/g, "")}.log`
-    const logMessage = `${logDateFormat} - [${logType}] ${log} \n\n`
+    // const logDateFormat = moment().format('HH:mm:ss:sss')
+    // const LOG_FILENAME = `${moment().format('YYYYMMDD')}_${logDateFormat.replace(/[^0-9]/g, "")}.log`
+    // const logMessage = `${logDateFormat} - [${logType}] ${log} \n\n`
 
-    try {
-      this.file.listDir(this.file.dataDirectory, '').then(async files => {
-        //console.log(files);
-        let sortedFiles = files.sort((a, b) => a.name.localeCompare(b.name))
-        // if at least 1 log file exists
-        if (sortedFiles.length > 0) {
-          // get latest log file
-          const latestLogfile = sortedFiles[sortedFiles.length - 1].name;
-          const intDateOfLatestLog = parseInt(latestLogfile.replace('.log', '').split('_')[0]);
-          const intDateToday = parseInt(moment().format('YYYYMMDD'));
+    // try {
+    //   this.file.listDir(this.file.dataDirectory, '').then(async files => {
+    //     //console.log(files);
+    //     let sortedFiles = files.sort((a, b) => a.name.localeCompare(b.name))
+    //     // if at least 1 log file exists
+    //     if (sortedFiles.length > 0) {
+    //       // get latest log file
+    //       const latestLogfile = sortedFiles[sortedFiles.length - 1].name;
+    //       const intDateOfLatestLog = parseInt(latestLogfile.replace('.log', '').split('_')[0]);
+    //       const intDateToday = parseInt(moment().format('YYYYMMDD'));
 
-          this.file.resolveLocalFilesystemUrl(sortedFiles[sortedFiles.length - 1].nativeURL).then(fileEntry => {
-            fileEntry.getMetadata(async metaData => {
+    //       this.file.resolveLocalFilesystemUrl(sortedFiles[sortedFiles.length - 1].nativeURL).then(fileEntry => {
+    //         fileEntry.getMetadata(async metaData => {
 
-              const sizeInMB = Math.round((metaData.size / 1024 / 1024) * 100) / 100;
-              //console.log(sizeInMB);
+    //           const sizeInMB = Math.round((metaData.size / 1024 / 1024) * 100) / 100;
+    //           //console.log(sizeInMB);
 
-              // if log file size is less than 4 MB, edit latest logfile with the same date
-              if (sizeInMB < 4 && (intDateOfLatestLog == intDateToday)) {
-                await this.updateLog(latestLogfile, logMessage);
-              } else { // else create a new logfile
-                await this.createLog(LOG_FILENAME, logMessage);
-              }
-            })
-          })
-        } else { // if no log files, create new
-          this.createLog(LOG_FILENAME, logMessage);
-        }
+    //           // if log file size is less than 4 MB, edit latest logfile with the same date
+    //           if (sizeInMB < 4 && (intDateOfLatestLog == intDateToday)) {
+    //             await this.updateLog(latestLogfile, logMessage);
+    //           } else { // else create a new logfile
+    //             await this.createLog(LOG_FILENAME, logMessage);
+    //           }
+    //         })
+    //       })
+    //     } else { // if no log files, create new
+    //       this.createLog(LOG_FILENAME, logMessage);
+    //     }
 
-        // delete excess logs, max of 5 logs
-        if (sortedFiles.length > 5) {
-          for (let indexOfFile = 0; indexOfFile < sortedFiles.length - 5; indexOfFile++) {
-            await this.file.removeFile(this.file.dataDirectory, sortedFiles[indexOfFile].name).catch(error => {//console.log(error)
-            });
-          }
-        }
-      });
-    } catch (err) {
-      throw err
-    }
+    //     // delete excess logs, max of 5 logs
+    //     if (sortedFiles.length > 5) {
+    //       for (let indexOfFile = 0; indexOfFile < sortedFiles.length - 5; indexOfFile++) {
+    //         await this.file.removeFile(this.file.dataDirectory, sortedFiles[indexOfFile].name).catch(error => {//console.log(error)
+    //         });
+    //       }
+    //     }
+    //   });
+    // } catch (err) {
+    //   throw err
+    // }
   }
 
   async updateLog(latestLogfile: string, logMessage: string) {
-    let blob = new Blob();
-    blob = new Blob([logMessage], { type: 'text/plain' })
-    await this.file.writeFile(this.file.dataDirectory, latestLogfile, blob, { replace: false, append: true })
-    //console.log('LOGGED TO :::', latestLogfile)
+    try {
+      await Filesystem.appendFile({
+        path: latestLogfile,
+        data: logMessage,
+        directory: Directory.Data,
+      });
+    } catch (error) {
+      console.error('Error updating log:', error);
+      throw error;
+    }
   }
-
   async createLog(fileName: string, logMessage: string) {
-    let blob = new Blob();
-    blob = new Blob([`LOGS FOR ${moment().format('MMM DD, YYYY')} \n\n`], { type: 'text/plain' })
-    await this.file.createFile(this.file.dataDirectory, fileName, true)
-    await this.file.writeFile(this.file.dataDirectory, fileName, blob, { replace: false, append: true })
-    //console.log('CREATED LOG :::', fileName)
+    try {
+      const headerMessage = `LOGS FOR ${moment().format('MMM DD, YYYY')} \n\n`;
 
-    blob = new Blob([logMessage], { type: 'text/plain' })
-    await this.file.writeFile(this.file.dataDirectory, fileName, blob, { replace: false, append: true })
-    //console.log('LOGGED TO :::', fileName)
+      // Create and write initial header
+      await Filesystem.writeFile({
+        path: fileName,
+        data: headerMessage,
+        directory: Directory.Data
+      });
+
+      // Append the log message
+      await Filesystem.appendFile({
+        path: fileName,
+        data: logMessage,
+        directory: Directory.Data
+      });
+
+    } catch (error) {
+      console.error('Error creating log:', error);
+      throw error;
+    }
   }
-
   async sendLogs() {
-    if (navigator.onLine) {
-      const intDateToday = parseInt(moment().format('YYYYMMDD'))
-
-      let logFiles: any[]
-      let latestLogFile: string;
-
-      this.file.listDir(this.file.dataDirectory, '').then(fileEntry => {
-        logFiles = _.map(fileEntry, _.property('name'))
-        latestLogFile = logFiles[logFiles.length - 1];
-
-        logFiles.forEach(async (logFile: string) => {
-          const dateOfLog = parseInt(logFile.split('_')[0])
-          const logFileBase64 = "data:txt;base64," + await this.encodeFileToBase64(this.file.dataDirectory, logFile)
-          const logFileSize = this.calculateImageSize(logFileBase64);
-
-          // allow upload if file size is < 5MB
-          if (logFileSize.mb < 5) {
-            if (dateOfLog <= intDateToday) {
-              const amId = await this.storage.get(SETTING_KEYS.ACCOUNT_MANAGER_ID)
-              const token = await this.storage.get(SETTING_KEYS.TOKEN)
-              const response = await this.syncApiService.uploadLogs(logFile, logFileBase64, amId, token).catch(error => {//console.log(error)
-              })
-              //console.log(response);
-              if (response.status == 200) {
-                // dont delete the last logfile to avoid error in writing logs while deleting logfile
-                if (logFile != latestLogFile) await this.file.removeFile(this.file.dataDirectory, logFile).catch(error => {
-                  //console.log(error)
-                });
-
-                const successLogUploadToast: Toast = {
-                  message: `${moment(dateOfLog, 'YYYYMMDD').format('MMM DD, YYYY')} logs are sent to developers`,
-                  animated: true,
-                  color: 'primary',
-                  position: 'bottom',
-                  duration: 4000
-                }
-                return await this.presentToastMessage(successLogUploadToast)
-              } else {
-                const failedLogFileToast: Toast = {
-                  message: `Can't send logs at the moment. Please try again later.`,
-                  animated: true,
-                  color: 'primary',
-                  position: 'bottom',
-                  duration: 4000
-                }
-                return await this.presentToastMessage(failedLogFileToast)
-              }
-
-            }
-          } else {
-            // assuming that the old log file with large size still exist
-            await this.file.removeFile(this.file.dataDirectory, logFile).catch(error => {//console.log(error)
-            });
-            const failedLogFileToast: Toast = {
-              message: `Can't send logs. File size should not exceed 5 MB.`,
-              animated: true,
-              color: 'primary',
-              position: 'bottom',
-              duration: 4000
-            }
-            return await this.presentToastMessage(failedLogFileToast)
-          }
-
-        })
-      })
-    } else {
-      const intConNeededToast: Toast = {
-        message: `Internet Connection is need to send logs`,
+    if (!navigator.onLine) {
+      return this.presentToastMessage({
+        message: 'Internet Connection is needed to send logs',
         animated: true,
         color: 'primary',
         position: 'bottom',
         duration: 4000
-      }
-      return await this.presentToastMessage(intConNeededToast)
+      });
     }
 
-  }
+    try {
+      const intDateToday = parseInt(moment().format('YYYYMMDD'));
 
+      // Get list of files
+      const result = await Filesystem.readdir({
+        path: '',
+        directory: Directory.Data
+      });
+
+      if (!result.files.length) {
+        return;
+      }
+
+      const logFiles = result.files;
+      const latestLogFile = logFiles[logFiles.length - 1];
+
+      // Process each log file
+      for (const logFile of logFiles) {
+        try {
+          const dateOfLog = parseInt(logFile.name.split('_')[0]);
+
+          // Read file content
+          const fileContent = await Filesystem.readFile({
+            path: logFile.name,
+            directory: Directory.Data,
+          });
+
+          const logFileBase64 = "data:txt;base64," + fileContent.data;
+          const logFileSize = this.calculateImageSize(logFileBase64);
+
+          // Check file size
+          if (logFileSize.mb >= 5) {
+            if (logFile !== latestLogFile) {
+              await Filesystem.deleteFile({
+                path: logFile.name,
+                directory: Directory.Data
+              });
+            }
+
+            await this.presentToastMessage({
+              message: "Can't send logs. File size should not exceed 5 MB.",
+              animated: true,
+              color: 'primary',
+              position: 'bottom',
+              duration: 4000
+            });
+            continue;
+          }
+
+          // Process files for current or past dates
+          if (dateOfLog <= intDateToday) {
+            const amId = await this.storage.get(SETTING_KEYS.ACCOUNT_MANAGER_ID);
+            const token = await this.storage.get(SETTING_KEYS.TOKEN);
+
+            const response = await this.syncApiService.uploadLogs(
+              logFile.name,
+              logFileBase64,
+              amId,
+              token
+            ).catch(error => {
+              console.error('Upload error:', error);
+              return { status: 0 };
+            });
+
+            if (response.status === 200) {
+              // Don't delete the latest log file
+              if (logFile !== latestLogFile) {
+                await Filesystem.deleteFile({
+                  path: logFile.name,
+                  directory: Directory.Data
+                });
+              }
+
+              await this.presentToastMessage({
+                message: `${moment(dateOfLog, 'YYYYMMDD').format('MMM DD, YYYY')} logs are sent to developers`,
+                animated: true,
+                color: 'primary',
+                position: 'bottom',
+                duration: 4000
+              });
+            } else {
+              await this.presentToastMessage({
+                message: "Can't send logs at the moment. Please try again later.",
+                animated: true,
+                color: 'primary',
+                position: 'bottom',
+                duration: 4000
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing file ${logFile}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error('Error in sendLogs:', error);
+      await this.presentToastMessage({
+        message: "Error processing logs. Please try again.",
+        animated: true,
+        color: 'primary',
+        position: 'bottom',
+        duration: 4000
+      });
+    }
+  }
   async encodeFileToBase64(filePath: string, file: string) {
-    let base64File: string
+    try {
+      const result = await Filesystem.readFile({
+        path: file,
+        directory: Directory.Data
+      });
 
-    await this.file.readAsDataURL(filePath, file)
-      .then(base64 => {
-        base64File = base64.split(',')[1]
-      })
-      .catch(err => {
-        throw err
-      })
-
-    return base64File
+      return result.data;
+    } catch (err) {
+      console.error('Error encoding file:', err);
+      throw err;
+    }
   }
 
-  async getValueByPaymentMode(topUp: any, paymentMethod) {
+  async getValueByPaymentMode(topUp: any, paymentMethod: any) {
     let regularTopUp;
 
     if (PAYMENT_METHODS.Monthly == paymentMethod) {
@@ -2402,13 +2523,13 @@ export class UtilService {
     return regularTopUp
   }
 
-  splitByPeriod(str) {
+  splitByPeriod(str: string) {
     const splitted = str.split(CONSTANTS_STRING.PERIOD).pop();
 
     return splitted;
   }
 
-  trimString(fieldValue: string, maxChar) {
+  trimString(fieldValue: string, maxChar: number) {
     let result;
 
     if (fieldValue != null) {
@@ -2432,44 +2553,56 @@ export class UtilService {
     const brgyValidators = [Validators.required, Validators.maxLength(80)];
 
     const subAddressValidators = {
-      [unitBuildingColSpec.field.attName]: unitBuildingValidators,
-      [blkNoColSpec.field.attName]: blkNoValidators,
-      [streetColSpec.field.attName]: streetValidators,
-      [brgyColSpec.field.attName]: brgyValidators
+      [unitBuildingColSpec.field!.attName]: unitBuildingValidators,
+      [blkNoColSpec.field!.attName]: blkNoValidators,
+      [streetColSpec.field!.attName]: streetValidators,
+      [brgyColSpec.field!.attName]: brgyValidators
     }
     subAddressSpecs.forEach(spec => {
       const specDsablingParams: FieldDisablingParams = {
         formGroup: formGrp,
         affectedComponents: subAddressSpecs,
         fieldDependency: {
-          field: spec.field,
+          field: spec.field!,
           conditions: []
         },
         customCondition: () => {
           let isOptional = false;
-          let fieldWithVal = [];
+          let fieldWithVal: string[] = [];
 
           subAddressSpecs.forEach(spec => {
-            isOptional = isOptional || !!formGrp.get(spec.field.attName).value;
-            if (!!formGrp.get(spec.field.attName).value) fieldWithVal.push(spec.field.attName)
-          })
+            const control = spec?.field?.attName ? formGrp.get(spec.field.attName) : null;
+            if (control) {
+              isOptional = isOptional || !!control.value;
+              if (!!control.value) {
+                fieldWithVal.push(spec.field!.attName);
+              }
+            }
+          });
 
           subAddressSpecs.forEach(spec => {
-            const validator = [...subAddressValidators[spec.field.attName]];
-            if (isOptional && !fieldWithVal.includes(spec.field.attName)) validator.shift();
+            if (spec?.field?.attName) {
+              const control = formGrp.get(spec.field.attName);
+              if (control && subAddressValidators[spec.field.attName]) {
+                const validator = [...subAddressValidators[spec.field.attName]];
+                if (isOptional && !fieldWithVal.includes(spec.field.attName)) {
+                  validator.shift();
+                }
 
-            formGrp.get(spec.field.attName).setValidators(validator);
-            formGrp.get(spec.field.attName).updateValueAndValidity();
-          })
+                control.setValidators(validator);
+                control.updateValueAndValidity();
+              }
+            }
+          });
         }
       };
 
-      this.setDisablingConditionalFunction(specDsablingParams, spec.field);
-      subAddressSpecs.forEach(spec => formGrp.get(spec.field.attName).markAsUntouched())
+      this.setDisablingConditionalFunction(specDsablingParams, spec.field!);
+      subAddressSpecs.forEach(spec => formGrp.get(spec.field!.attName)?.markAsUntouched());
     })
   }
 
-  formatDateByMonthYear(date) {
+  formatDateByMonthYear(date: any) {
     let parsedDate;
 
     if (date != null) {
@@ -2496,7 +2629,7 @@ export class UtilService {
    */
   sortAddressByName(type: 'state' | 'city' | 'zipcode', address: any[], isValue?: boolean) {
 
-    let zipList = []
+    let zipList: any[] = []
 
     if (!address || address.length === 0) {
       return address;
@@ -2573,7 +2706,7 @@ export class UtilService {
    * @returns date formatted DD/MM/YYYY
    * @author Edric Valdez
    */
-  formatDateByDDMMYYYY(date) {
+  formatDateByDDMMYYYY(date: any) {
     let parsedDate;
 
     if (date != null) {
@@ -2592,7 +2725,7 @@ export class UtilService {
     return base64;
   }
 
-  getBase64(file): Promise<any> {
+  getBase64(file: File): Promise<any> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -2620,7 +2753,7 @@ export class UtilService {
     }
   }
 
-  getIRPQResult(irpqData) {
+  getIRPQResult(irpqData: any) {
     let totalScore: number = 0
     let result: string = ""
 
@@ -2670,7 +2803,7 @@ export class UtilService {
     return points
   }
 
-  async displaySyncValidationMessage(validation, backdropDismiss = true) {
+  async displaySyncValidationMessage(validation: any, backdropDismiss = true) {
     return new Promise(async (resolve, reject) => {
       let buttons: any[] = [];
 
@@ -2711,49 +2844,51 @@ export class UtilService {
     const siDataDB = await this.dbService.getAllTableData(CONSTANT_DB_TABLE.SI_MAIN, [{ fieldName: 'siId', operation: 'equal', compareValue: siId }]);
     const siData: [] = this.createObjectArrFromDBData(siDataDB)[0];
     if (!!siData && siData.length != 0) {
-      return siData[PLAN_CODE_KEY] && siData[PLAN_CODE_KEY].includes(EAZY_HEALTH);
+      return (siData as any)[PLAN_CODE_KEY] && (siData as any)[PLAN_CODE_KEY].includes(EAZY_HEALTH);
     } else {
       return false;
     }
   }
 
-  filterValidStories(stories) {
+  filterValidStories(stories: any[]): any[] {
     if (stories && stories.length > 0 && !stories.includes(null)) {
-      let formattedDateNow = new Date().getTime();
+      const formattedDateNow = new Date().getTime();
       return stories
         .filter(res => {
           const launchDateTime = new Date(res.launchDate).getTime();
           const expiryDateTime = new Date(res.expiryDate).getTime();
-          return launchDateTime <= formattedDateNow && expiryDateTime >= formattedDateNow && res.status === 'active';
+          return launchDateTime <= formattedDateNow &&
+            expiryDateTime >= formattedDateNow &&
+            res.status === 'active';
         })
         .sort((a, b) => b.id - a.id);
     }
     return [];
   }
 
-  filterMedia(stories) {
+  filterMedia(stories: any[]) {
     return stories.filter(res => this.checkMediaUrl(res));
   }
 
-  checkMediaUrl(res) {
+  checkMediaUrl(res: any) {
     if (res.type != WHATS_NEW_TYPE.TEXT && (res.mediaUrl.mediaLink && res.mediaUrl.mediaLink != "")) {
       return res;
     }
   }
 
-  filterNonMediaStories(stories) {
+  filterNonMediaStories(stories: any[]) {
     return stories.filter(res =>
       res.type == WHATS_NEW_TYPE.TEXT
     );
   }
 
-  filterMediaStories(stories) {
+  filterMediaStories(stories: any[]) {
     return stories.filter(res =>
       res.type == WHATS_NEW_TYPE.IMAGE || res.type == WHATS_NEW_TYPE.VIDEO
     );
   }
 
-  formatDateYYYYMMDDhhmmss(date) {
+  formatDateYYYYMMDDhhmmss(date: Date) {
     return this.datePipe.transform(date, "yyyy-MM-dd'T'HH:mm:ss");
   }
 
@@ -2797,16 +2932,15 @@ export class UtilService {
   async showToastNotification(msg: string, color: string, closeBtnAction: any = false) {
     this.toastCtrl.dismiss();
     const toast = await this.toastCtrl.create({
-      // message: `
-      //   <span>
-      //   No Remaining Application Number credits. <br/>Please connect to the internet.</span>
-      // `,
       color: color,
       message: msg,
       animated: true,
       duration: -1,
       position: 'top',
-      showCloseButton: closeBtnAction ? true : false,
+      buttons: closeBtnAction ? [{
+        text: 'Close',
+        role: 'cancel'
+      }] : [],
       cssClass: 'toast-notif',
     });
 
@@ -2817,13 +2951,13 @@ export class UtilService {
     });
   }
 
-  convertToMonths(count, isYears) {
+  convertToMonths(count: number, isYears: string) {
     if (count && isYears) {
       if (isYears == "Years") {
-        count = parseInt(count) * 12
+        count = Number(count) * 12
         return count;
       } else {
-        return parseInt(count);
+        return Number(count);
       }
     } else {
       return null;
@@ -2841,10 +2975,11 @@ export class UtilService {
     return type;
   }
 
-  async openBase64PDFFile(base64) {
+  async openBase64PDFFile(base64: string) {
     try {
       const type = this.getTypeFromBase64(base64) || 'application/pdf';
-      base64 = this.cleanBase64(base64)
+      base64 = this.cleanBase64(base64);
+
       const byteCharacters = atob(base64);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
@@ -2854,15 +2989,29 @@ export class UtilService {
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type });
 
-      await this.file.writeExistingFile(this.file.externalCacheDirectory, 'tempFile', blob);
-      await this.fileOpener.open(this.file.externalCacheDirectory + 'tempFile', type);
+      const tempFile = 'tempFile.pdf';
+      await Filesystem.writeFile({
+        path: tempFile,
+        data: base64,
+        directory: Directory.Cache
+      });
+
+      const fileInfo = await Filesystem.getUri({
+        path: tempFile,
+        directory: Directory.Cache
+      });
+
+      await FileOpener.open({
+        filePath: fileInfo.uri,
+        contentType: type
+      });
 
     } catch (err) {
       console.log('Error creating file', err);
     }
   }
 
-  jsonValidator(obj) {
+  jsonValidator(obj: string) {
     try {
       JSON.parse(obj);
       return true;
@@ -2871,7 +3020,7 @@ export class UtilService {
     }
   }
 
-  async agilaInitializer(val, isGet?: boolean) {
+  async agilaInitializer(val: any, isGet?: boolean) {
     if (isGet) {
       return await this.storage.get('agilaInit');
     } else {
@@ -2894,20 +3043,20 @@ export class UtilService {
     const journeyGlobal = this.settingsService.journeyGlobalData;
 
     ConfigDetailsFormGroup.patchValue({
-      name: `${journeyGlobal.accountManager.firstName}${journeyGlobal.accountManager.middleName ? journeyGlobal.accountManager.middleName : ''} ${journeyGlobal.accountManager.name}`,
-      channel: journeyGlobal.accountManager.accountManagerCategory,
-      agentId: journeyGlobal.accountManager.agentNumber,
-      fullSyncProgress: journeyGlobal.fullSyncProgress,
-      leadsFullSyncStatus: journeyGlobal.leadsFullSyncStatus ? journeyGlobal.leadsFullSyncStatus.isSync : null,
-      naFullSyncStatus: journeyGlobal.naFullSyncStatus ? journeyGlobal.naFullSyncStatus.isSync : null,
-      irpqFullSyncStatus: journeyGlobal.irpqFullSyncStatus ? journeyGlobal.irpqFullSyncStatus.isSync : null,
-      siFullSyncStatus: journeyGlobal.siFullSyncStatus ? journeyGlobal.siFullSyncStatus.isSync : null,
-      eappFullSyncStatus: journeyGlobal.eappFullSyncStatus ? journeyGlobal.eappFullSyncStatus.isSync : null,
-      checklistFullSyncStatus: journeyGlobal.checklistFullSyncStatus ? journeyGlobal.checklistFullSyncStatus.isSync : null,
-      referrorFullSyncStatus: journeyGlobal.referrorFullSyncStatus ? journeyGlobal.referrorFullSyncStatus.isSync : null
+      name: `${journeyGlobal!.accountManager.firstName}${journeyGlobal!.accountManager.middleName ? journeyGlobal!.accountManager.middleName : ''} ${journeyGlobal!.accountManager.name}`,
+      channel: journeyGlobal!.accountManager.accountManagerCategory,
+      agentId: journeyGlobal!.accountManager.agentNumber,
+      fullSyncProgress: journeyGlobal!.fullSyncProgress,
+      leadsFullSyncStatus: journeyGlobal!.leadsFullSyncStatus ? journeyGlobal!.leadsFullSyncStatus.isSync : null,
+      naFullSyncStatus: journeyGlobal!.naFullSyncStatus ? journeyGlobal!.naFullSyncStatus.isSync : null,
+      irpqFullSyncStatus: journeyGlobal!.irpqFullSyncStatus ? journeyGlobal!.irpqFullSyncStatus.isSync : null,
+      siFullSyncStatus: journeyGlobal!.siFullSyncStatus ? journeyGlobal!.siFullSyncStatus.isSync : null,
+      eappFullSyncStatus: journeyGlobal!.eappFullSyncStatus ? journeyGlobal!.eappFullSyncStatus.isSync : null,
+      checklistFullSyncStatus: journeyGlobal!.checklistFullSyncStatus ? journeyGlobal!.checklistFullSyncStatus.isSync : null,
+      referrorFullSyncStatus: journeyGlobal!.referrorFullSyncStatus ? journeyGlobal!.referrorFullSyncStatus.isSync : null
     });
 
-    journeyGlobal.accountManager.license.identificationDocuments.forEach((data) => {
+    journeyGlobal!.accountManager.license.identificationDocuments.forEach((data: any) => {
       if (data.categories[0] == "Variable") {
         ConfigDetailsFormGroup.patchValue({
           variableLicenseType: data.categories[0],
@@ -2927,50 +3076,56 @@ export class UtilService {
 
 
     ConfigDetailsFormGroup.patchValue({
-      trackingLog: journeyGlobal.session.join('\n'),
-      apiLogger: journeyGlobal.requestResponse.join('\n')
+      trackingLog: journeyGlobal!.session.join('\n'),
+      apiLogger: journeyGlobal!.requestResponse.join('\n')
     });
 
-
-    ConfigDetails.ConfigDetails.rows[15].columns[0].field.conditionalFunction = () => {
-      const toggleLocalStorageValue = ConfigDetailsFormGroup.get('toggleLocalStorageSignature');
-      this.settingsService.updateJourneyGlobalUpdateSignatureValueFromLocalStorage(toggleLocalStorageValue.value);
-    }
-
-    const dataSpecs = {
-      formGeneratorSpecs: ConfigDetails.ConfigDetails,
-      FormGroup: ConfigDetailsFormGroup
-    }
-
-    const modalProps = {
-      type: 'devConfig',
-      data: dataSpecs
-    }
-
-    const isModalOpened = await this.modalCtrl.getTop();
-    if (!isModalOpened) {
-      const devtableModal = await this.modalCtrl.create({
-        component: ModalViewComponent,
-        backdropDismiss: false,
-        componentProps: {
-          modalProps: modalProps,
-          modalCtrl: this.modalCtrl
-        },
-        cssClass: 'dev-mode-css'
-      });
-      await devtableModal.present();
-
-      await devtableModal.onDidDismiss().then(async (proceed) => {
-
-      });
+    if (ConfigDetails?.ConfigDetails?.rows[15]?.columns[0]?.field) {
+      ConfigDetails.ConfigDetails.rows[15].columns[0].field.conditionalFunction = () => {
+        const toggleLocalStorageValue = ConfigDetailsFormGroup.get('toggleLocalStorageSignature')?.value;
+        if (toggleLocalStorageValue !== undefined) {
+          this.settingsService.updateJourneyGlobalUpdateSignatureValueFromLocalStorage(toggleLocalStorageValue);
+        }
+        return true; // Always return a value
+      }
     }
   }
 
-  async setSubmittedAppCount(val) {
+  // THE BELOW NEEEDS TO GET REVIEWIED
+
+  // const dataSpecs = {
+  //   formGeneratorSpecs: ConfigDetails.ConfigDetails,
+  //   FormGroup: ConfigDetailsFormGroup
+  // }
+
+  // const modalProps = {
+  //   type: 'devConfig',
+  //   data: this.dataSpecs
+  // }
+
+  // const isModalOpened: HTMLIonModalElement | undefined = await this.modalCtrl.getTop();
+  // if(!isModalOpened) {
+  //   const devtableModal = await this.modalCtrl.create({
+  //     component: ModalViewComponent,
+  //     backdropDismiss: false,
+  //     componentProps: {
+  //       modalProps: modalProps,
+  //       modalCtrl: this.modalCtrl
+  //     },
+  //     cssClass: 'dev-mode-css'
+  //   });
+  //   await devtableModal.present();
+
+  //   await devtableModal.onDidDismiss().then(async (proceed) => {
+
+  //   });
+  // }
+
+  async setSubmittedAppCount(val: any) {
     await this.storage.set(KEYS.SUBMITTED_APPLICATION_COUNT, val);
   }
 
-  async setExpiredAppCount(val) {
+  async setExpiredAppCount(val: any) {
     await this.storage.set(KEYS.EXPIRED_APPLICATION_COUNT, val);
   }
 
@@ -3001,19 +3156,19 @@ export class UtilService {
 
 
     const journeyGlobal = this.settingsService.journeyGlobalData;
-    const scenarioCreator = journeyGlobal.session.join('\n')
+    const scenarioCreator = journeyGlobal!.session.join('\n')
 
     console.log(`${scenarioCreator}`);
   }
 
-  logInsert(data, type, module) {
+  logInsert(data: any, type: any, module: any) {
     if (environment.env == 'PROD') return;
     data = JSON.stringify(data);
     this.settingsService.updateJourneyGlobalUpdateRequestResponseLogging(`[${module}][${type == 0 ? 'REQUEST' : 'RESPONSE'}] ${data}`);
     console.log(`[${module}][${type == 0 ? 'REQUEST' : 'RESPONSE'}] ${data}`)
   }
 
-  logDynatrace(body) {
+  logDynatrace(body: any) {
     this.queueParams$.next({
       id: this.generateUUID(),
       status: QUEUE_STATUS.PENDING,
@@ -3023,13 +3178,21 @@ export class UtilService {
   }
 
   async fhSetJSON(key: string, value: object) {
-    const jsonString = JSON.stringify(value)
-    return await this.file.writeFile(this.file.externalCacheDirectory, key, jsonString, { replace: true });
+    const jsonString = JSON.stringify(value);
+    return await Filesystem.writeFile({
+      path: key,
+      data: jsonString,
+      directory: Directory.Cache,
+      recursive: true
+    });
   }
 
-  async fhGetJSON(key) {
-    const jsonString = await this.file.readAsText(this.file.externalCacheDirectory, key);
-    return JSON.parse(jsonString);
+  async fhGetJSON(key: string) {
+    const result = await Filesystem.readFile({
+      path: key,
+      directory: Directory.Cache
+    });
+    return JSON.parse(result.data as string);
   }
 
   async getErrorObject() {
@@ -3053,11 +3216,12 @@ export class UtilService {
   }
 
 
-  async isCreatedDateIsBelowDataPatchDate(showModalValidation, createdDate, eappData?: any, fn?: any) {
+  async isCreatedDateIsBelowDataPatchDate(showModalValidation: any, createdDate: any, eappData?: any, fn?: any): Promise<boolean> {
     const dataPatchDate = 1726045200000; // Wednesday, September 11, 2024 5:00:00 PM GMT+08:00
     const appNumber = eappData.applicationNumber;
     createdDate = parseInt(createdDate);
     this.eappId = eappData.eappId;
+
     if (createdDate <= dataPatchDate && eappData.serverId == null) {
       if (showModalValidation) {
         if (navigator.onLine) {
@@ -3065,18 +3229,22 @@ export class UtilService {
           const oldAppNumber13Digit = appNumber.substring(0, appNumber.length - 1);
           const newAppNumber = await this.offAppNumService.checkApplicationNumber(oldAppNumber13Digit);
           await this.dismissLoading();
+
           if (newAppNumber.status == 200) {
             const newAppNumberValue = JSON.parse(newAppNumber.data);
             await this.saveNewApplicationNumber(appNumber, newAppNumberValue.applicationNumber);
             await this.addToMobileTagging(newAppNumberValue.applicationNumber);
+
             if (appNumber == newAppNumberValue.applicationNumber) {
               return false;
-              //do nothing if same appnumber returned in api response
             } else {
               await this.showNewOldApplicationNumberModal(newAppNumberValue.applicationNumber, appNumber, fn);
+              return false; // Added return
             }
           }
+          return false; // Added return for when status isn't 200
         }
+        return false; // Added return for when offline
       } else {
         return true;
       }
@@ -3085,11 +3253,11 @@ export class UtilService {
     }
   }
 
-  showNewOldApplicationNumberModal(newApplicationNumber, oldApplicationNumber, fn?: any) {
+  showNewOldApplicationNumberModal(newApplicationNumber: any, oldApplicationNumber: any, fn?: any) {
     this.infoAlert(`Hi! This is your new Application number: ${newApplicationNumber}. We have detected that your old application number might be invalid. Plese do not use your old application number: ${oldApplicationNumber}.`)
   }
 
-  async saveNewApplicationNumber(currentApplicationNumber, validApplicationNumber) {
+  async saveNewApplicationNumber(currentApplicationNumber: any, validApplicationNumber: any) {
     const dateNow = this.setDate();
     await this.dbService.updateTableData(CONSTANT_DB_TABLE.EAPP_MAIN,
       ['applicationNumber', 'syncStatus', 'dateCreated', 'dateModified'],
@@ -3160,7 +3328,7 @@ export class UtilService {
     }
   }
 
-  async addToMobileTagging(appNumber) {
+  async addToMobileTagging(appNumber  : any) {
     let trashData = await this.storage.get(KEYS.OFF_APP_NUMBER_TRASH);
     let appNumberData = await this.storage.get(KEYS.OFF_APP_NUMBER);
     let clientExpiryDate,
@@ -3172,7 +3340,7 @@ export class UtilService {
       serverExpiryDate = appNumberData[0].serverExpiryDate;
     } else {
       clientExpiryDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1));
-      macAddress = this.device.uuid;
+      macAddress = (await Device.getId()).identifier;
       serverExpiryDate = new Date(new Date().setFullYear(new Date().getFullYear() + 2));
     }
     let newAppNumberToTag = {
@@ -3194,7 +3362,7 @@ export class UtilService {
     await this.storage.set(KEYS.OFF_APP_NUMBER_TRASH, trashData);
   }
 
-  simulateTouchEventByClassName(className) {
+  simulateTouchEventByClassName(className = '') {
     const elements = document.getElementsByClassName(className);
 
     if (elements.length > 0) {
