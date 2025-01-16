@@ -1,0 +1,23 @@
+<span class="progress-button"
+        [ngClass]="{'status-complete': syncStatus === syncStatusModel.complete,
+        'status-failed': syncStatus === syncStatusModel.failed || syncStatus === syncStatusModel.incomplete }">
+        <span class="content">
+            <span  class="text" >
+                <ion-icon name="sync"
+                          [ngClass]="{'rotating': syncStatus === syncStatusModel.ongoing}"
+                          *ngIf="syncStatus == syncStatusModel.ongoing">
+                </ion-icon>
+                <ion-icon class="ion-padding-start"
+                          name="cloud-done"
+                        *ngIf="syncStatus === syncStatusModel.complete">
+                </ion-icon>
+            </span>
+        </span>
+         <span class="progress">
+            <span class="progress-inner"
+                  [ngClass]="{'ongoing': syncStatus === syncStatusModel.ongoing,
+                  'loaded': syncStatus === syncStatusModel.complete,
+                  'failed': syncStatus === syncStatusModel.failed}">
+            </span>
+        </span>
+</span>

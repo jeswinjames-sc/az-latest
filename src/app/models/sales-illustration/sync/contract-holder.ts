@@ -1,0 +1,52 @@
+import { PreferredContactChannels } from './PreferredContactChannels';
+import { Addresses } from './Addresses';
+import { Person } from '@models/eapp-request/person';
+
+export class ContractHolder{
+    self ?: any;
+    name ?: any;
+    middleName ?: any;
+    firstName ?: any;
+    gender ?: any;
+    maritalStatus ?: any;
+    birthDate ?: any;
+    occupation ?: any;
+    occupationTitle ?: any;
+    preferredContactChannels ?: PreferredContactChannels;
+    addresses ?: Addresses;
+    hasMiddleName ?: Boolean;
+    accountManager ?: any;
+    houseHoldMonthlyIncome ?: any;
+    monthlyIncome ?: any;
+    appointments ?: any;
+    otherLegalName ?: {};
+    maidenName ?: Person;
+    employer ?: any;
+    annualIncome ?: any;
+    annualIncomeCurrency ?: any;
+    sourceOfIncome ?: any;
+    otherSourceOfIncome ?: any;
+    height ?: any;
+    heightUnit ?: any;
+    weight ?: any;
+    weightUnit ?: any;
+    bmi?:any;
+    employerBranchDetail ?: any;
+    employerBranch ?: any
+    cityOfBirth ?: any;
+    birthPlaceRegion ?: any;
+    nativeCountry ?: any;
+    nationality ?: any;
+    isUsPerson ?: any;
+    identificationType ?: any;
+    identificationNumber ?: any;
+    relationType ?: any;
+    father ?: {};
+    mother ?: {};
+    siblings ?: {};
+    questions ?: {};
+    addressReference ?: any;
+    empty ?: any;
+    ltgEmployeeTag ?: any;
+    suffix ?: any;
+}

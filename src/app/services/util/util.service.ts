@@ -35,8 +35,8 @@ import { STATUS } from '@utils/constants/status/status';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { CONSTANTS_STRING } from '@utils/constants/string/constants-string';
-import { AppVersion } from '@ionic-native/app-version/ngx';
-import { File } from '@ionic-native/file/ngx';
+import { App } from '@capacitor/app';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { PAYMENT_FREQUENCY, PAYMENT_METHODS } from '@utils/constants/options/product-info/payment-method';
 import { PLANS } from '@utils/constants/options/product-info/plans';
 import { KEYS } from '@utils/constants/storage-keys/keys';
@@ -46,19 +46,19 @@ import { CONSTANT_DB_TABLE } from '@utils/constants/constant-table-name';
 import { WHATS_NEW_TYPE } from '@utils/constants/whats-new-type';
 import { WhatsNewModalComponent } from '@components/modals/whats-new-modal/whats-new-modal.component';
 import { WhatsNew } from '@models/whats-new';
-import { MultipleErrorsModalComponent } from '../../components/modals/multiple-errors-modal/multiple-errors-modal.component';
-import { Screenshot } from '@ionic-native/Screenshot/ngx';
-import { FileOpener } from '@ionic-native/file-opener/ngx';
+import { MultipleErrorsModalComponent } from '@components/modals/multiple-errors-modal/multiple-errors-modal.component';
+import { Screenshot } from 'capacitor-screenshot';
+import { FileOpener } from '@capacitor-community/file-opener';
 import { BehaviorSubject } from 'rxjs';
 import { ROUTES } from '@utils/constants/route/routes';
 import { FORM_ACTIONS } from '@utils/enums/form-actions';
 import { ModalViewComponent } from '@components/modal-view/modal-view.component';
-import * as ConfigDetails from '@form-specs/settings/settings-form-specs';
-import { ConfigDetailsFormGroup } from '@fg-controls/settings';
+import * as ConfigDetails from '@utils/constants/form/form-specs/settings/settings-form-specs';
+import { ConfigDetailsFormGroup } from '@utils/constants/form/form-groups/controls/settings';
 import { ApplicationNumberService, CoreApiService } from '@core/services';
 import { environment } from '@environment/environment';
 import { QUEUE_PROCESS, QUEUE_STATUS } from '@utils/enums/queue-data';
-import { Device } from '@ionic-native/device/ngx';
+import { Device } from '@capacitor/device';
 import { COUNTRY_LIST_EXT } from '@utils/constants/country-list';
 import { DIVIDEND_OPTION_WS } from '@utils/constants/dividend-option-ws';
 
@@ -78,10 +78,10 @@ export class UtilService {
 
   backBtnEvent$: BehaviorSubject<{ url: string, siId: number, status: string }> = new BehaviorSubject({ url: '', siId: 0, status: '' });
   queueParams$: BehaviorSubject<any> = new BehaviorSubject({});
-  
-  eappId
-  invalidAppNumModal;
-  getNewApplicationNumber;
+
+  public eappId!: string;
+  public invalidAppNumModal: any;
+  public getNewApplicationNumber: any;
   constructor(
     private loadingController: LoadingController,
     private alertCtrl: AlertController,
@@ -94,40 +94,36 @@ export class UtilService {
     private dbService: DbService,
     private httpClient: HttpClient,
     private file: File,
-    private fileOpener: FileOpener,
-    private screenshot: Screenshot,
     private syncApiService: CoreApiService,
-    private appVersion: AppVersion,
     public modalCtrl: ModalController,
     private datePipe: DatePipe,
     public alertController: AlertController,
     private offAppNumService: ApplicationNumberService,
-    private device: Device
   ) {
-    this.occupationList = JSON.parse(localStorage.getItem('occupationsGroupData'));
-
+    // Load occupation data with null check
+    const occupationsData = localStorage.getItem('occupationsGroupData');
+    this.occupationList = occupationsData ? JSON.parse(occupationsData) : [];
   }
 
   public generateUUID(): string {
     return uuid();
   }
-  takeScreenshot() {
-    this.screenshot.save().then(() => {
+  async takeScreenshot() {
+    const image = await Screenshot.take().then(() => {
       this.infoAlert("Successfully downloaded.")
-    })
-
+    });
   }
-  setPolicyData(a) {
+  setPolicyData(a: any) {
     this.storage.set('pdata', a)
   }
   getPolicyData() {
     return this.storage.get('pdata')
   }
-  setLeadFname(a) {
+  setLeadFname(a: any) {
     this.storage.set('fn', a)
 
   }
-  setLeadLname(a) {
+  setLeadLname(a: any) {
     this.storage.set('ln', a)
 
   }
@@ -179,17 +175,19 @@ export class UtilService {
       if (type === ADDRESS_TYPE.BENE) {
         formGroup.controls[`zipCode`].reset();
       }
-      if (spec) {
+      if (spec?.field && specToName?.field) {
+        spec.field.isRequired = false;
+        formGroup.controls[spec.field.attName].reset();
         spec.field.states = [];
         spec.field.city = [];
         specToName.field.selectedText = await this.getAddressName(countryCode, stateId, cityCode);
         specsToClear.forEach(specs => {
-          if (specs) {
+          if (specs?.field) {
             specs.field.selectedText = '';
           }
         });
 
-        if([CONSTANTS_STRING.PH_CODE, CONSTANTS_STRING.US_CODE].includes(countryCode)) {
+        if ([CONSTANTS_STRING.PH_CODE, CONSTANTS_STRING.US_CODE].includes(countryCode)) {
           const zipcode = await this.settingsService.getGenericCode(countryCode, stateId, cityCode);
           if (zipcode && zipcode.zipCodes && zipcode.zipCodes.length > 0) {
             formGroup.controls[spec.field.attName].enable();
@@ -251,12 +249,12 @@ export class UtilService {
         formGroup.controls[`${type}CityCode`].disable();
         formGroup.controls[`${type}ZipCode`].disable();
       }
-      if (spec) {
+      if (spec?.field && specToName?.field) {
         spec.field.zipcode = [];
         spec.field.states = [];
-        specToName.field.selectedText = await this.getAddressName(countryCode, stateId);
+        spec.field.selectedText = await this.getAddressName(countryCode, stateId);
         specsToClear.forEach(specs => {
-          if (specs) {
+          if (specs?.field) {
             specs.field.selectedText = '';
           }
         });
@@ -340,13 +338,13 @@ export class UtilService {
         formGroup.controls[`${type}CityCode`].reset();
         formGroup.controls[`${type}ZipCode`].reset();
       }
-      if (spec) {
+      if (spec?.field && specToName?.field) {
         spec.field.countries = [];
         spec.field.zipcode = [];
         spec.field.city = [];
         specToName.field.selectedText = await this.getAddressName(countryCode);
         specsToClear.forEach(specs => {
-          if (specs) {
+          if (specs?.field) {
             specs.field.selectedText = '';
           }
         });
@@ -401,7 +399,7 @@ export class UtilService {
       if (isRequired) {
         formGroup.controls[field.attName].setValidators([Validators.required]);
       } else {
-        if(spec.field.attName === 'workZipCode') {
+        if (spec.field.attName === 'workZipCode') {
           formGroup.controls[field.attName].setValidators([Validators.pattern(REGEXP.NUMBER_ONLY)]);
         } else {
           formGroup.controls[field.attName].clearValidators();
@@ -428,7 +426,7 @@ export class UtilService {
           } else {
             if (spec.field.attName !== 'homeZipCode') {
               setFieldProperties(spec, true);
-            } 
+            }
           }
         }
 
@@ -441,7 +439,7 @@ export class UtilService {
             } else {
               if (spec.field.attName !== 'workZipCode') {
                 setFieldProperties(spec, true);
-              } 
+              }
             }
           }
         }
@@ -511,12 +509,12 @@ export class UtilService {
   getAddressName(countryCode: string, stateId?: string, cityCode?: string, zipCode?: string) {
     const { location } = this.settingsService.journeyGlobalData;
     const country = _.find(location, { countryCode });
-    if (countryCode && stateId === null && cityCode === null){
+    if (countryCode && stateId === null && cityCode === null) {
       return null;
-    }else if (countryCode && stateId === null){
+    } else if (countryCode && stateId === null) {
       return null;
-    }else if (zipCode && cityCode && stateId && countryCode) {
-      if(countryCode == CONSTANTS_STRING.PH_CODE || countryCode == CONSTANTS_STRING.US_CODE) {
+    } else if (zipCode && cityCode && stateId && countryCode) {
+      if (countryCode == CONSTANTS_STRING.PH_CODE || countryCode == CONSTANTS_STRING.US_CODE) {
         const state = _.find(country.states, { stateId });
         if (!state) return;
         const city = _.find(state.cities, { cityCode });
@@ -526,7 +524,7 @@ export class UtilService {
         }
       } else return zipCode;
     } else if (cityCode && stateId && countryCode) {
-      if(countryCode == CONSTANTS_STRING.PH_CODE || countryCode == CONSTANTS_STRING.US_CODE) {
+      if (countryCode == CONSTANTS_STRING.PH_CODE || countryCode == CONSTANTS_STRING.US_CODE) {
         const state = _.find(country.states, { stateId });
         if (!state) return;
         const city = _.find(state.cities, { cityCode });
@@ -535,7 +533,7 @@ export class UtilService {
         }
       } else return cityCode;
     } else if (stateId && countryCode) {
-      if(countryCode == CONSTANTS_STRING.PH_CODE || countryCode == CONSTANTS_STRING.US_CODE) {
+      if (countryCode == CONSTANTS_STRING.PH_CODE || countryCode == CONSTANTS_STRING.US_CODE) {
         const state = _.find(country.states, { stateId });
         if (state) {
           return state.name;
@@ -666,7 +664,7 @@ export class UtilService {
     return date;
   }
 
-  formatDate(value: string,format:string){
+  formatDate(value: string, format: string) {
     const date = moment(+value).format(format);
 
     return date;
@@ -767,12 +765,12 @@ export class UtilService {
   }
 
   objectArrSpaceCleanUp(object) {
-    if(!object) return;
-    Object.keys(object).forEach(key => { 
+    if (!object) return;
+    Object.keys(object).forEach(key => {
       let val = object[key]
-      if(val) {
+      if (val) {
         val = val.toString().trim();
-        val = ''+val.replace(/ +(?= )/g,'');
+        val = '' + val.replace(/ +(?= )/g, '');
         object[key] = val;
       }
     });
@@ -1141,17 +1139,17 @@ export class UtilService {
 
     const homeProvince = (personData.homeProvinceCode !== null && personData.homeProvinceCode !== undefined) &&
       (personData.homeCountryCode == usaCode || personData.homeCountryCode == CONSTANTS_STRING.PH_CODE) ?
-        personData.homeCityCode == null ? '0' :
-          this.getAddressName(
-            personData.homeCountryCode,
-            personData.homeProvinceCode) : '0'; 
+      personData.homeCityCode == null ? '0' :
+        this.getAddressName(
+          personData.homeCountryCode,
+          personData.homeProvinceCode) : '0';
 
     const homeCity = (personData.homeCityCode !== null && personData.homeCityCode !== undefined) &&
       (personData.homeCountryCode == usaCode || personData.homeCountryCode == CONSTANTS_STRING.PH_CODE) ?
-        this.getAddressName(
-          personData.homeCountryCode,
-          personData.homeProvinceCode,
-          personData.homeCityCode) : '0';
+      this.getAddressName(
+        personData.homeCountryCode,
+        personData.homeProvinceCode,
+        personData.homeCityCode) : '0';
 
     const workProvince = personData.workProvinceCode !== null && personData.workProvinceCode !== undefined ?
       personData.workCityCode == null ? '0' :
@@ -1169,15 +1167,15 @@ export class UtilService {
     const vessel = personData.occupationCode == null || personData.occupationGrpCode == null ? '999' : 'NA';
     let workTerritory = personData.workZipCode == null || (personData.workCountryCode == '63' && (workProvince == '0' || workCity == '0')) ?
       { country: 'other', province: 'other', city: 'other' } : { country: workCountry, province: workProvince, city: workCity };
-    
-      
-      const workCountryname = COUNTRY_LIST_EXT.find((data) => {
-        return data.countryCode == personData.workCountryCode
-      });
 
-    
-    if(personData.workCountryCode && (personData.workCountryCode !== CONSTANTS_STRING.PH_CODE)) {
-      if(personData.workCountryCode == usaCode) {
+
+    const workCountryname = COUNTRY_LIST_EXT.find((data) => {
+      return data.countryCode == personData.workCountryCode
+    });
+
+
+    if (personData.workCountryCode && (personData.workCountryCode !== CONSTANTS_STRING.PH_CODE)) {
+      if (personData.workCountryCode == usaCode) {
         workTerritory = { country: USA, province: '0', city: '0' };
       } else {
         workTerritory = { country: workCountryname.name, province: '0', city: '0' };
@@ -1386,7 +1384,7 @@ export class UtilService {
       });
     } else if (backNav.isModalDismiss) {
       const modalOnTop = this.modalCtrl.getTop();
-      if(modalOnTop) {
+      if (modalOnTop) {
         await this.modalCtrl.dismiss();
       }
     } else {
@@ -1612,7 +1610,7 @@ export class UtilService {
     return await alert.present();
   }
 
-  async infoAlertDidDismissOk(message:string) {
+  async infoAlertDidDismissOk(message: string) {
     const alert = await this.alertService.displayAlert(message, 'OK');
     await alert.present();
 
@@ -2137,7 +2135,7 @@ export class UtilService {
     const selectedCountry = _.find(location, _.matchesProperty('countryCode', formGroup.get(countryColSpecs.field.attName).value))
 
     const PHUSCodes = [CONSTANTS_STRING.PH_CODE, CONSTANTS_STRING.US_CODE];
-    if(selectedCountry && !PHUSCodes.includes(selectedCountry.countryCode)) {
+    if (selectedCountry && !PHUSCodes.includes(selectedCountry.countryCode)) {
       let provinceControl, cityControl, zipControl;
       if (provinceColSpecs) provinceControl = formGroup.get(provinceColSpecs.field.attName);
       if (cityColSpecs) cityControl = formGroup.get(cityColSpecs.field.attName);
@@ -2720,15 +2718,15 @@ export class UtilService {
   }
 
   filterValidStories(stories) {
-    if(stories && stories.length > 0 && !stories.includes(null)) {
-      let formattedDateNow = new Date().getTime(); 
-      return stories   
-      .filter(res => {    
-        const launchDateTime = new Date(res.launchDate).getTime();     
-        const expiryDateTime = new Date(res.expiryDate).getTime();          
-        return launchDateTime <= formattedDateNow && expiryDateTime >= formattedDateNow && res.status === 'active';   
-      })   
-      .sort((a, b) => b.id - a.id);
+    if (stories && stories.length > 0 && !stories.includes(null)) {
+      let formattedDateNow = new Date().getTime();
+      return stories
+        .filter(res => {
+          const launchDateTime = new Date(res.launchDate).getTime();
+          const expiryDateTime = new Date(res.expiryDate).getTime();
+          return launchDateTime <= formattedDateNow && expiryDateTime >= formattedDateNow && res.status === 'active';
+        })
+        .sort((a, b) => b.id - a.id);
     }
     return [];
   }
@@ -3015,7 +3013,7 @@ export class UtilService {
     console.log(`[${module}][${type == 0 ? 'REQUEST' : 'RESPONSE'}] ${data}`)
   }
 
-   logDynatrace(body) {
+  logDynatrace(body) {
     this.queueParams$.next({
       id: this.generateUUID(),
       status: QUEUE_STATUS.PENDING,
@@ -3034,8 +3032,8 @@ export class UtilService {
     return JSON.parse(jsonString);
   }
 
-  async getErrorObject(){
-    try { throw Error('') } catch(err) { return err; }
+  async getErrorObject() {
+    try { throw Error('') } catch (err) { return err; }
   }
 
   async showMobileNotSameAlert() {
@@ -3053,25 +3051,25 @@ export class UtilService {
       await alert.present();
     });
   }
-  
+
 
   async isCreatedDateIsBelowDataPatchDate(showModalValidation, createdDate, eappData?: any, fn?: any) {
     const dataPatchDate = 1726045200000; // Wednesday, September 11, 2024 5:00:00 PM GMT+08:00
     const appNumber = eappData.applicationNumber;
     createdDate = parseInt(createdDate);
     this.eappId = eappData.eappId;
-    if(createdDate <= dataPatchDate && eappData.serverId == null) {
-      if(showModalValidation) {
-        if(navigator.onLine) {
+    if (createdDate <= dataPatchDate && eappData.serverId == null) {
+      if (showModalValidation) {
+        if (navigator.onLine) {
           this.presentLoading('Validating application number...');
           const oldAppNumber13Digit = appNumber.substring(0, appNumber.length - 1);
           const newAppNumber = await this.offAppNumService.checkApplicationNumber(oldAppNumber13Digit);
           await this.dismissLoading();
-          if(newAppNumber.status == 200) {
+          if (newAppNumber.status == 200) {
             const newAppNumberValue = JSON.parse(newAppNumber.data);
-            await this.saveNewApplicationNumber(appNumber, newAppNumberValue.applicationNumber); 
+            await this.saveNewApplicationNumber(appNumber, newAppNumberValue.applicationNumber);
             await this.addToMobileTagging(newAppNumberValue.applicationNumber);
-            if(appNumber == newAppNumberValue.applicationNumber) {
+            if (appNumber == newAppNumberValue.applicationNumber) {
               return false;
               //do nothing if same appnumber returned in api response
             } else {
@@ -3121,17 +3119,17 @@ export class UtilService {
     const allEapp = await this.getAllEappMain();
     let invalidAppNumbers = await this.storage.get(KEYS.INVALID_APPLICATION_NUMBER_HISTORY) || [];
     let refreshEappAppNumbersLocal = [];
-    if(allEapp.length > 0) {
-      for(let i = 0; i < allEapp.length; i++) {
+    if (allEapp.length > 0) {
+      for (let i = 0; i < allEapp.length; i++) {
         const isCreatedDateIsBelowDataPatchDate = await this.isCreatedDateIsBelowDataPatchDate(false, allEapp[i].dateCreated, allEapp[i]);
-        if(isCreatedDateIsBelowDataPatchDate) {
+        if (isCreatedDateIsBelowDataPatchDate) {
           const eappData = allEapp[i];
           const applicationNumber = eappData.applicationNumber;
 
-          if(invalidAppNumbers && invalidAppNumbers.length > 0) {
+          if (invalidAppNumbers && invalidAppNumbers.length > 0) {
             let index;
             index = invalidAppNumbers.indexOf(applicationNumber);
-            if(index == -1) {
+            if (index == -1) {
               invalidAppNumbers.push(applicationNumber);
             }
           } else {
@@ -3166,9 +3164,9 @@ export class UtilService {
     let trashData = await this.storage.get(KEYS.OFF_APP_NUMBER_TRASH);
     let appNumberData = await this.storage.get(KEYS.OFF_APP_NUMBER);
     let clientExpiryDate,
-    macAddress,
-    serverExpiryDate;
-    if(appNumberData && appNumberData.length > 0) {
+      macAddress,
+      serverExpiryDate;
+    if (appNumberData && appNumberData.length > 0) {
       clientExpiryDate = appNumberData[0].clientExpiryDate;
       macAddress = appNumberData[0].macAddress;
       serverExpiryDate = appNumberData[0].serverExpiryDate;
@@ -3185,7 +3183,7 @@ export class UtilService {
       used: true,
       usedByMobile: true
     }
-    if(trashData) {
+    if (trashData) {
       trashData.push(newAppNumberToTag);
     } else {
       trashData = [];
@@ -3198,10 +3196,10 @@ export class UtilService {
 
   simulateTouchEventByClassName(className) {
     const elements = document.getElementsByClassName(className);
-  
+
     if (elements.length > 0) {
       const element = elements[0]; // Choose the first element with the class name
-  
+
       const touchObj = new Touch({
         identifier: Date.now(),
         target: element,
@@ -3212,7 +3210,7 @@ export class UtilService {
         rotationAngle: 0.0,
         force: 1.0
       });
-  
+
       const touchEvent = new TouchEvent('touchstart', {
         cancelable: true,
         bubbles: true,
@@ -3220,7 +3218,7 @@ export class UtilService {
         targetTouches: [touchObj],
         changedTouches: [touchObj]
       });
-  
+
       element.dispatchEvent(touchEvent);
     } else {
       console.error(`No elements with class name "${className}" found.`);

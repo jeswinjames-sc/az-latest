@@ -1,0 +1,51 @@
+<ion-content class="ion-padding" scroll-y="true">
+  <div class="error-header">
+    <ion-label class="error-label">
+      This card has encountered some errors. Please use the details below to guide you or send it to IT Helpdesk.
+    </ion-label>
+  </div>
+  <div class="error-body">
+    <div class="error-list">
+      <ion-grid> 
+        <ion-row *ngIf="!isMultipleError">
+          <ion-col *ngIf="errorsToDisplay[0]">
+            <ion-label class="error-list-content">
+              <p class="error-list-label">{{errorsToDisplay[0].message}}</p>
+              <h5>Field: {{errorsToDisplay[0].field}}</h5>
+              <h5>Value: {{errorsToDisplay[0].value}}</h5>
+            </ion-label>
+          </ion-col>
+        </ion-row>
+
+        <!-- will display 2 rows of error only -->
+        <div *ngIf="isMultipleError"> 
+          <ion-row *ngFor="let error of errorsToDisplay">
+            <ion-col *ngIf="error[0]" size="6">
+              <ion-label class="error-list-content">
+                <p class="error-list-label">{{error[0].message}}</p>
+                <h5>Field: {{error[0].field}}</h5>
+                <h5>Value: {{error[0].value}}</h5>
+              </ion-label>
+            </ion-col>
+            <ion-col *ngIf="error[1]">
+              <ion-label class="error-list-content">
+                <p class="error-list-label">{{error[1].message}}</p>
+                <h5>Field: {{error[1].field}}</h5>
+                <h5>Value: {{error[1].value}}</h5>
+              </ion-label>
+            </ion-col>
+          </ion-row>
+        </div>
+      </ion-grid>
+    </div>
+  </div>
+  <div class="error-footer">
+    <button type="button" data-inline="true" class="alert-button ion-focusable ion-activatable sc-ion-alert-md">
+      <span class="alert-button-inner sc-ion-alert-md" (click)="sendReports()">SEND REPORTS</span>
+    </button>
+    <button type="button" data-inline="true" class="alert-button ion-focusable ion-activatable sc-ion-alert-md">
+      <span class="alert-button-inner sc-ion-alert-md" (click)="closeModal()">CLOSE</span>
+    </button>
+  </div>
+</ion-content>
+

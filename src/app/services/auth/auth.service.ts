@@ -12,19 +12,19 @@ import {FullSyncService} from '@components/full-sync-button/full-sync.service';
 import { ProcessQueueService } from '@core/services';
 import { AccountManagerResponseItem } from '@models/account-manager/account-manager';
 import { BehaviorSubject } from 'rxjs';
-import { LoginApiService } from '@services/api/login.api.service.service';
+import { LoginApiService } from '@services/api/login.api.service';
 import { AlertService } from '@services/alert/alert.service';
 import { ACTION_MESSAGE } from '@utils/constants/string/action-message';
 import { PLAN_TYPE } from '@utils/enums/plan-type';
 import { AppService } from '@services/app/app.service';
-import { settings } from 'cluster';
+import { lastValueFrom, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class AuthService {
-  private _authUser$ = new BehaviorSubject<AccountManagerResponseItem>(null)
+  private _authUser$ = new BehaviorSubject<AccountManagerResponseItem | null>(null)
 
   constructor(
     private appService: AppService,
@@ -84,7 +84,7 @@ export class AuthService {
   }
 
   async getIfLoggedIn(): Promise <boolean> {
-    let hasLoggedIn: boolean;
+    let hasLoggedIn!: boolean;
     try {
       const accountManagerId =  await this.getAccountManagerId();
       if  (accountManagerId !== '') {
@@ -271,7 +271,7 @@ export class AuthService {
    * Probably a duplicate of setUserLoggedIn and getUserLoggedIn from app.servics
    * @author Garfunkel.Vila
    */
-  public get authUser$ () : BehaviorSubject<AccountManagerResponseItem> {
+  public get authUser$ () : BehaviorSubject<AccountManagerResponseItem | null> {
     // Use initAuthUserFromStorage to rehydrate this value from storage
     return this._authUser$
   }
@@ -279,21 +279,23 @@ export class AuthService {
   async refreshAccountManager() {
     const username = await this.storage.get(SETTING_KEYS.EMAIL);
     const token = await this.storage.get(SETTING_KEYS.TOKEN);
-    const accountManagerResponse = await this.loginApi.accountManagerAPIRequest(username, token)
-    .then((e) => {
-      this._authUser$.next(new AccountManagerResponseItem(JSON.parse(e.data)[0]));
-      return e
-    });
+    const accountManagerResponse = await lastValueFrom(
+      this.loginApi.accountManagerAPIRequest(username, token).pipe(
+        tap((e) => {
+          this._authUser$.next(new AccountManagerResponseItem(JSON.parse(e.data)[0]));
+        })
+      )
+    );
     await this.storage.set(SETTING_KEYS.ACCOUNTMANAGER_DATA, accountManagerResponse);
   }
 
-  async initLicenseCheck(planType) {
+  async initLicenseCheck(planType: number) {
     let isLicenseValid = false;
     const licenseCheckLoading = 'Checking your license details';
     const productPlanType = planType == 0 ? PLAN_TYPE.UL : PLAN_TYPE.TRAD;
-    const missingLicenseData = this.authUser$.value.checkLicenseValueValidity(productPlanType);
-    if(this.authUser$.value.availableLicenses && missingLicenseData) {
-      const licenseAvailable = this.authUser$.value.hasValidLicenseForPlanTypeShort(productPlanType);
+    const missingLicenseData = this.authUser$?.value?.checkLicenseValueValidity(productPlanType);
+    if(this.authUser$?.value?.availableLicenses && missingLicenseData) {
+      const licenseAvailable = this.authUser$?.value?.hasValidLicenseForPlanTypeShort(productPlanType);
         if(licenseAvailable) {
           isLicenseValid = true;
         } else {

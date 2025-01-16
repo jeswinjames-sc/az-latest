@@ -1,4 +1,4 @@
-import { ConfigDetailsFormGroup, SettingsFormGroup } from "@fg-controls/settings";
+import { ConfigDetailsFormGroup, SettingsFormGroup } from "@utils/constants/form/form-groups/controls/settings";
 import { ColumnGeneratorSpecs } from "@models/specs/column-generator-specs";
 import { FormGeneratorSpecs } from "@models/specs/form-generator-specs";
 import { RowGeneratorSpecs } from "@models/specs/row-generator-specs";

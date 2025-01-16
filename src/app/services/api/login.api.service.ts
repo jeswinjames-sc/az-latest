@@ -101,13 +101,8 @@ export class LoginApiService {
     return response;
   }
 
-  async accountManagerAPIRequest(email: string, token: string) {
-    try {
-      const response = await this.http.get(`${environment.config.apiUrl}/accountmanagers?email=${email}`, { headers: this.setHeaders(token) });
-      return response;
-    } catch (error) {
-      throw error;
-    }
+  accountManagerAPIRequest(email: string, token: string): Observable<any> {
+    return this.http.get(`${environment.config.apiUrl}/accountmanagers?email=${email}`, { headers: this.setHeaders(token) });
   }
 
   async getSystemAPIRequest(accountmanagerID: string, token: string) {

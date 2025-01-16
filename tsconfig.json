@@ -19,18 +19,50 @@
     "target": "es2022",
     "module": "es2020",
     "lib": [
-      "es2018", 
+      "es2018",
       "dom"
     ],
     "useDefineForClassFields": false,
     "paths": {
-      "@environment/*": ["src/environments/*"],
-      "@services/*": ["src/app/services/*"],
-      "@utils/*": ["src/app/utils/*"],
-      "@core/*": ["src/app/core/*"],
-      "@models/*": ["src/app/models/*"],
-      "@components/*": ["src/app/components/*"],
-      "@pages/*": ["src/app/pages/*"]
+      "@environment/*": [
+        "src/environments/*"
+      ],
+      "@services/*": [
+        "src/app/services/*"
+      ],
+      "@utils/*": [
+        "src/app/utils/*"
+      ],
+      "@core/*": [
+        "src/app/core/*"
+      ],
+      "@models/*": [
+        "src/app/models/*"
+      ],
+      "@components/*": [
+        "src/app/components/*"
+      ],
+      "@pages/*": [
+        "src/app/pages/*"
+      ],
+      "@pipes/*": [
+        "app/pipes/*"
+      ],
+      "@fg-controls/*": [
+        "app/utils/constants/form/form-groups/controls/*"
+      ],
+      "@form-group/*": [
+        "app/utils/constants/form/form-groups/*"
+      ],
+      "@form-specs/*": [
+        "app/utils/constants/form/form-specs/*"
+      ],
+      "@form/*": [
+        "app/utils/constants/form/*"
+      ],
+      "@guards/*": [
+        "app/guards/*"
+      ]
     }
   },
   "angularCompilerOptions": {

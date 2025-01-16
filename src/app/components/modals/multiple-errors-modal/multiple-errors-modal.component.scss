@@ -1,0 +1,58 @@
+:host {
+    .error-container {
+      color: var(--ion-color-dark-tint);
+      --padding-start: 0;
+    }
+
+    .error-header {
+        margin: 15px 5px 10px 10px;
+        .error-label{
+            font-size: 18px !important;
+            font-weight: 600;
+            margin-bottom: 10px !important;
+        }
+    }
+
+    .error-body {
+        padding: 5px 5px 5px 5px;
+        border-top: 1px solid rgb(0 0 0 / 14%);
+        border-bottom: 1px solid rgb(0 0 0 / 20%);
+        margin: 0px 10px 10px 10px;
+
+        .error-label{
+            font-size: 15px !important;
+            font-weight: 600;
+            margin-bottom: 10px !important;
+        }
+
+        .error-list {
+            max-height: 85px;
+            min-height: 85px;
+            overflow: scroll;
+            // margin-top: 10px;
+    
+            .error-list-content {
+
+                .error-list-label{
+                    font-size: 14px !important;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                }
+            }
+        }
+
+        .error-list::-webkit-scrollbar { /* WebKit */
+            width: 0;
+            height: 0;
+        }
+    }
+
+    .error-footer {
+        display: flex;
+        float: right;
+    }
+
+    .inner-scroll {
+        bottom: unset !important;
+    }
+}

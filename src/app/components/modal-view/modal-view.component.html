@@ -1,0 +1,198 @@
+<ion-icon ios="ios-close-circle" md="md-close-circle" class="modal-dismiss" *ngIf="modalProps.type != 'password'"
+  (click)="dismissModal()"></ion-icon>
+
+
+
+
+<ion-content class="ion-padding" *ngIf="modalProps.type == 'settings' || modalProps.type == 'image' || modalProps.type == 'si-product' || modalProps.type == 'password'" [ngStyle]="{'height': modalProps.type == 'password' ? '30%' : '100%'}">
+  <ng-container *ngIf="modalProps.type == 'settings'">
+    <ion-header *ngIf="title !=='' ">
+      <ion-toolbar>
+        <ion-title slot="start" color="primary">{{title}}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="dismissModal()">
+            <ion-icon name="close" color="primary"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-list class="settings-padding">
+      <!-- <form-generator [formSpecs]="settings.SettingFormSpecs"></form-generator> -->
+    </ion-list>
+
+  </ng-container>
+
+  <ng-container *ngIf="modalProps.type == 'image'">
+    <ion-slides zoom>
+      <ion-slide>
+        <img [src]="modalProps.imgSrc" class="modal-img" alt="modal-img" />
+      </ion-slide>
+    </ion-slides>
+
+    <ion-fab vertical="top" horizontal="end" slot="fixed">
+      <ion-fab-button  (click)="dismissModal()" >
+        <ion-icon name="close"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+
+
+  </ng-container>
+
+  <ng-container *ngIf="modalProps.type == 'si-product'">
+
+    <ion-item lines="none">
+      <h1 slot="start">{{title}}</h1>
+      <ion-button slot="end" fill="clear" (click)="modalCtrl.dismiss(false)">
+        <ion-icon name="close" size="large" color="primary"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+
+    <ng-container>
+      <ul class="descItemized" *ngIf="descItemized.length > 0">
+        <li *ngFor="let prd of descItemized">{{prd}}</li>
+      </ul>
+      <p class="ion-padding"
+        [hidden]="description === 'No available description for this product.' || description ===''">
+        {{description}}
+      </p>
+    </ng-container>
+
+  </ng-container>
+  <ng-container *ngIf="modalProps.type == 'password'">
+    <p *ngIf="modalProps.data && modalProps.data != ''">{{modalProps.data}}</p>
+    <p *ngIf="!modalProps.data || modalProps.data == ''">You were inactive for about 10 minutes. Please login and save your progress before closing the app.</p>
+    <ng-container>
+      <ion-row [ngClass]="errData.password && !passwordIsFocused ? '' : 'az-login__errorMargin'">
+        <ion-col>
+          <ion-label color="primary" stacked>Password</ion-label>
+          <ion-row [ngClass]="passwordClass" class="ion-align-items-center ion-justify-content-between">
+            <ion-input type="{{type}}" class="az-login__passwordInput" maxlength="100" autocomplete="false"
+              clearOnEdit="false" [(ngModel)]="password" (ngModelChange)="passwordValidation()" (ionBlur)="handleBlur()"
+              name="password" (ionFocus)="handleFocus()" id="password" (keyup.enter)="login()"></ion-input>
+            <ion-icon [name]="showPassword ? 'eye' : 'eye-off'" (click)="toggleViewPassword()">
+            </ion-icon>
+          </ion-row>
+          <span class="az-login__validator-error" *ngIf="errData.password">{{errData.password}}</span>
+          <span class="az-login__validator-error" *ngIf="errData.message">{{errData.message}}</span>
+        </ion-col>
+      </ion-row>
+    </ng-container>
+  </ng-container>
+
+</ion-content>
+
+
+<ng-container *ngIf="modalProps.type == 'si-product'">
+  <ion-footer class="ion-no-border">
+    <ion-toolbar>
+      <ion-row>
+        <ion-col></ion-col>
+        <ion-col>
+          <ion-button color="primary" expand="block" (click)="selectSIProduct()">Select Plan</ion-button>
+        </ion-col>
+        <ion-col></ion-col>
+      </ion-row>
+ 
+    </ion-toolbar>
+  </ion-footer>
+</ng-container>
+
+<ng-container *ngIf="modalProps.type == 'password'">
+  <ion-footer class="ion-no-border">
+    <ion-toolbar class="ion-no-border">
+      <ion-row>
+        <ion-col></ion-col>
+        <ion-col>
+          <ion-button color="primary" expand="block" (click)="login()" [disabled]="!password">Login</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-toolbar>
+  </ion-footer>
+</ng-container>
+
+<ng-container *ngIf="modalProps.type == 'table'">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title slot="start" color="light">{{modalProps.data.subTitle}}</ion-title>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="dismissModal()">
+          <ion-icon name="close" color="light"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <div style="overflow:auto">
+    <form-generator [formSpecs]="modalProps.data.formGeneratorSpecs"
+    *ngIf="modalProps.data.formGeneratorSpecs !== undefined && modalProps.data.hasShowMore">
+    </form-generator>
+  </div>
+
+  <ion-footer class="ion-no-border">
+    <ion-toolbar>
+      <ion-row>
+        <ion-col></ion-col>
+        <ion-col>
+          <ion-button color="primary" expand="block" (click)="addTableFn()">Save {{modalProps.data.customSaveButtonName}}</ion-button>
+        </ion-col>
+        <ion-col></ion-col>
+      </ion-row>
+ 
+    </ion-toolbar>
+  </ion-footer>
+</ng-container>
+
+<ng-container *ngIf="modalProps.type == 'estate'">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title slot="start" color="light">{{modalProps.data.estateBeneSubTitle}}</ion-title>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="dismissModal()">
+          <ion-icon name="close" color="light"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <div style="overflow:auto">
+    <form-generator [formSpecs]="modalProps.data.estateBeneFormGeneratorSpecs"
+    *ngIf="modalProps.data.estateBeneFormGeneratorSpecs !== undefined && modalProps.data.hasShowMore">
+    </form-generator>
+  </div>
+
+  <ion-footer class="ion-no-border">
+    <ion-toolbar>
+      <ion-row>
+        <ion-col></ion-col>
+        <ion-col>
+          <ion-button color="primary" expand="block" (click)="addTableFn()">Save</ion-button>
+        </ion-col>
+        <ion-col></ion-col>
+      </ion-row>
+ 
+    </ion-toolbar>
+  </ion-footer>
+</ng-container>
+
+<ng-container *ngIf="modalProps.type == 'devConfig'">
+  <div style="overflow:auto">
+    <form-generator [formSpecs]="modalProps.data.formGeneratorSpecs">
+    </form-generator>
+  </div>
+
+  <ion-footer>
+    <ion-toolbar>
+      <ion-row>
+        <ion-col></ion-col>
+        <ion-col>
+          <ion-button color="primary" expand="block">Refresh</ion-button>
+        </ion-col>
+        <ion-col>
+          <ion-button color="primary" expand="block" (click)="dismissModal()">Close</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-toolbar>
+  </ion-footer>
+</ng-container>

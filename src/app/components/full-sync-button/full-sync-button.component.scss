@@ -1,0 +1,158 @@
+.progress-button {
+  position: relative;
+  display: inline-block;
+  padding: 0px;
+  outline: none;
+  border: none;
+  color: #ffffff;
+  // background: #1b77a6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 1em;
+  cursor: pointer;
+  min-width: 50px;
+}
+
+.progress-button.md.button.status-failed {
+  background: #ff4f53;
+}
+
+.progress-button[disabled],
+.progress-button[disabled]:hover,
+.progress-button[disabled].state-loading {
+  cursor: default;
+  background: #d9d9d9;
+}
+
+.progress-button.md.button.status-complete {
+  cursor: default;
+  background: #69bb7b;
+  transition: all 1s;
+}
+
+ion-icon {
+  font-size: 20px;
+}
+
+span.text {
+  display: flex;
+  align-items: center;
+}
+
+.progress-button .content {
+  position: relative;
+  display: block;
+}
+
+.progress-button .content::before,
+.progress-button .content::after  {
+  position: absolute;
+  right: 20px;
+  color: #0e7138;
+  opacity: 0;
+  -webkit-transition: opacity 0.3s 0.3s;
+  transition: opacity 0.3s 0.3s;
+}
+
+.progress-button.state-success .content::before,
+.progress-button.state-error .content::after {
+  opacity: 1;
+}
+
+.notransition {
+  -webkit-transition: none !important;
+  transition: none !important;
+}
+.progress-button .progress {
+  background: #148544;
+}
+
+.progress-button .progress-inner {
+  position: absolute;
+  left: 0;
+  background: #69bb7b;
+  top: 0;
+  height: 100%;
+  -webkit-transition: width 0.3s, opacity 0.3s;
+  transition: width 0.3s, opacity 0.3s;
+}
+
+
+.progress-button {
+  overflow: hidden;
+}
+
+.progress-button .content {
+  z-index: 10;
+  -webkit-transition: -webkit-transform 0.3s;
+  transition: transform 0.3s;
+}
+
+.progress-button .content::before,
+.progress-button .content::after {
+  top: 100%;
+  right: auto;
+  left: 50%;
+  -webkit-transition: opacity 0.3s;
+  transition: opacity 0.3s;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+
+.progress-button.state-success .content,
+.progress-button.state-error .content {
+  -webkit-transform: translateY(-100%);
+  transform: translateY(-100%);
+}
+
+@keyframes loading {
+  0%   {width: 0%;}
+  100% {width: 90%;}
+}
+
+@keyframes loaded {
+  100% {width: 100%;}
+}
+
+
+
+@-webkit-keyframes rotating /* Safari and Chrome */ {
+  from {
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotating {
+  from {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+.rotating {
+  -webkit-animation: rotating 2s linear infinite;
+  -moz-animation: rotating 2s linear infinite;
+  -ms-animation: rotating 2s linear infinite;
+  -o-animation: rotating 2s linear infinite;
+  animation: rotating 2s linear infinite;
+}
+.progress-button:focus,
+.progress-button:hover{
+  background: #4c8dff;
+}

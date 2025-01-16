@@ -1,0 +1,26 @@
+<ion-content no-bounce>
+  <div class="story">
+    <div class="progress-bars">
+        <div *ngFor="let story of stories; let i = index" class="progress-bar-container">
+          <div [ngStyle]="{'animation-duration': story.mediaUrl.duration+'s'}" [ngClass]="getProgressBarClassName(i)"></div>
+        </div>
+    </div>  
+    <div [hidden]="whatsNewType == 3 ? false : true" class="video">
+      <video id="video" (touchstart)="storyPause(true)" preload="auto" poster="../assets/images/loader.gif"
+        (touchend)="storyPause(false)" [src]="mediaUrl" type="video/mp4" autoplay="{{autoplay}}">
+      </video>
+    </div>
+    <div [hidden]="whatsNewType == 2 ? false : true" class="image">
+      <img id="bgimage" class="whats-new-bg" [src]="mediaUrl" (touchstart)="storyPause(true)" (touchend)="storyPause(false)">
+      <img id="image" class="whats-new-img" [src]="mediaUrl" (touchstart)="storyPause(true)" (touchend)="storyPause(false)">
+    </div>
+    <div [hidden]="whatsNewType == 1 ? false : true" class="text" [ngClass]="theme">
+      <div id="text" class="whats-new-text" (touchstart)="storyPause(true)" (touchend)="storyPause(false)">
+        <h1>{{description}}</h1>
+      </div>
+    </div>
+    <ion-button *ngIf="showExternalLinkBtn" (click)="openExternalLink()" expand="block" class="ion-text-capitalize center-float-btn">
+      {{externalLinkTitle}}
+    </ion-button>
+  </div>
+</ion-content>

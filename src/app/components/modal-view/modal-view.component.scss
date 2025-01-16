@@ -1,0 +1,80 @@
+:host {
+    .modal-img {
+        object-fit: contain;
+        height: 100vh;
+        --background: var(--ion-color-dark);
+    }
+
+    .modal-dismiss {
+        position: fixed;
+        z-index: 1;
+        top: 12px;
+        right: 12px;
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 34px;
+    }
+
+    .settings-padding {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .az-login {
+        &__errorMargin {
+            margin-bottom: 22px;
+        }
+    
+        &__customInput {
+            border: solid #414141 2.5px;
+            border-radius: 5px;
+            font-family: "AllianzNeo-Regular";
+            font-size: 18px;
+            padding-right: 8px;
+            height: 40px;
+            margin: 0 !important;
+            color: #414141 !important;
+        }
+    
+        &__isFocused {
+            border: solid #007AB3 2.5px !important;
+        }
+    
+        &__passwordInput {
+            font-family: "AllianzNeo-Regular";
+            font-size: 18px;
+            padding: 0;
+            margin: 0 !important;
+            color: #414141 !important;
+            border: none;
+        }
+    
+        &__validator-error {
+            font-family: "AllianzNeo-SemiBold";
+            font-size: 18px;
+            color: #DC3149;
+            margin: 5 0;
+        }
+    
+        &__error {
+            color: #DC3149 !important;
+            border: solid #DC3149 2.5px !important;
+        }
+    
+        &__passwordInput {
+            font-family: "AllianzNeo-Regular";
+            font-size: 18px;
+            padding: 0;
+            margin: 0 !important;
+            color: #414141 !important;
+    
+        }
+    }
+
+    p {
+        font-size: 18px !important;
+    }
+    
+
+    
+}
